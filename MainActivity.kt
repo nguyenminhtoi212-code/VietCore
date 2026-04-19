@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity() {
     private var updateJob: Job? = null
     private var selfDestructStarted = false
 
-    // Màu sắc hệ thống
     private val COLOR_MATRIX_GREEN = Color.parseColor("#00FF41")
     private val COLOR_DANGER_RED = Color.parseColor("#FF0000")
     private val COLOR_WARNING_ORANGE = Color.parseColor("#FF8C00")
@@ -45,10 +44,9 @@ class MainActivity : AppCompatActivity() {
 
         setupFooterInfo()
 
-        // TRẠNG THÁI 1: INITIALIZING (Khởi tạo động cơ)
         val tvStatus = findViewById<TextView>(R.id.tv_security_status)
-        tvStatus?.text = "SYSTEM: INITIALIZING CORE..."
-        tvStatus?.setTextColor(Color.WHITE)
+        tvStatus?.text = "OMNIS: INITIALIZING SECURE ENGINE..."
+        tvStatus?.setTextColor(COLOR_SCANNING_CYAN)
 
         verifySystemApi()
         startRealtimeMonitoring()
@@ -63,26 +61,26 @@ class MainActivity : AppCompatActivity() {
         updateJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    // --- TRẠNG THÁI 2: SCANNING (Đang quét hệ thống) ---
-                    if (!isInitialLoaded) {
-                        withContext(Dispatchers.Main) {
-                            tvStatus?.text = "OMNIS: SCANNING INTEGRITY..."
-                            tvStatus?.setTextColor(COLOR_SCANNING_CYAN)
-                        }
-                    }
-
+                    // --- 1. PHÂN LOẠI THIẾT BỊ & PHẦN CỨNG ---
                     val isAndroidTV = isRunningOnTV()
                     val isTVBox = android.os.Build.MODEL.contains("TV Box", ignoreCase = true) || 
                                  android.os.Build.PRODUCT.contains("tv", ignoreCase = true)
+                    
+                    // MỚI: Kiểm tra Android đời cũ và phần cứng lạc hậu (32-bit)
+                    val isLegacyOS = security.isLegacyOSDetected()
+                    val isOutdatedHW = security.isOutdatedHardware()
+                    
                     val isBootloaderUnlocked = security.isBootloaderUnlocked()
                     val isCustomROM = security.isCustomROMDetected()
 
+                    // --- 2. TOÀN VẸN TÀI NGUYÊN ---
                     val isManifestTampered = security.isManifestTampered()
                     val isResourcesTampered = security.isResourceModified()
                     
                     val isAppNameChanged = checkAppNameInternal("VietCore")
                     val isAppIconChanged = checkAppIconInternal()
 
+                    // --- 3. KIỂM TRA CAN THIỆP HỆ THỐNG ---
                     val isRooted = security.isRooted()
                     val isEmulator = security.isEmulatorOrVirtualMachine()
                     val isCloned = security.isAppCloned()
@@ -91,9 +89,11 @@ class MainActivity : AppCompatActivity() {
                     val isCompromised = security.isIntegrityCompromised()
 
                     val currentViolation = when {
+                        isLegacyOS -> "OUTDATED ANDROID VERSION" // Chặn Android cũ
+                        isOutdatedHW -> "INCOMPATIBLE HARDWARE"  // Chặn 32-bit
                         isAndroidTV || isTVBox -> "UNSUPPORTED PLATFORM"
                         isBootloaderUnlocked || isCustomROM -> "UNSECURE HARDWARE"
-                        isAppNameChanged -> "APP NAME ALTERATION"
+                        isAppNameChanged -> "APP NAME ALTERATION DETECTED"
                         isAppIconChanged -> "APP LOGO TAMPERED"
                         isManifestTampered || isResourcesTampered || isModified -> "APK INTEGRITY BREACH"
                         isRemote -> "REMOTE ACCESS DETECTED"
@@ -106,15 +106,11 @@ class MainActivity : AppCompatActivity() {
 
                     withContext(Dispatchers.Main) {
                         if (currentViolation != null) {
-                            // TRẠNG THÁI 3: THREAT DETECTED (Phát hiện đe dọa)
                             handleBankGradeViolation(currentViolation, tvStatus, errorOverlay, tvErrorMessage)
                         } else {
                             val specs = simulator.getRealTimeSpecs()
                             tvDevice?.text = specs
-                            
-                            // TRẠNG THÁI 4: VERIFIED (Hệ thống an toàn)
                             updateSecurityStatusLabel(tvStatus)
-                            
                             errorOverlay?.visibility = View.GONE
                             isInitialLoaded = true
                         }
@@ -144,10 +140,10 @@ class MainActivity : AppCompatActivity() {
         val alertMsg = "SYSTEM PROTECTION ACTIVE\n" +
                       "--------------------------\n" +
                       "CURRENT ERROR: $reason\n\n" +
-                      "Status: CRITICAL THREAT DETECTED\n" +
-                      "Action: Self-destruct sequence active."
+                      "Status: Unauthorized modification detected.\n" +
+                      "Security action: App functionality disabled."
 
-        statusView?.text = "SHIELD: TERMINATED [!] "
+        statusView?.text = "SHIELD: TERMINATED"
         statusView?.setTextColor(COLOR_DANGER_RED)
 
         overlay?.visibility = View.VISIBLE
@@ -190,8 +186,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateSecurityStatusLabel(statusView: TextView?) {
         if (statusView == null) return
-        
-        // Logic hiển thị trạng thái đã xác minh (Verified)
         when (apiStatus) {
             "VIRUS_IP" -> {
                 statusView.text = "SECURITY: MALICIOUS IP DETECTED"
