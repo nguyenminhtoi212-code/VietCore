@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_height="match_parent"
+     android:layout_width="match_parent"
+     android:background="#000000"
+     tools:context=".MainActivity">
+
+    <TextView
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         app:layout_constraintTop_toTopOf="parent"
+         android:layout_margin="16dp"
+         app:layout_constraintStart_toStartOf="parent"
+         android:textSize="12sp"
+         android:fontFamily="monospace"
+         android:textColor="#00FF00"
+         android:id="@+id/tv_security_status"
+         android:text="OMNIS SECURITY: ACTIVE"
+         android:textStyle="bold" />
+
+    <ScrollView
+         android:layout_height="0dp"
+         android:layout_width="match_parent"
+         android:layout_marginBottom="10dp"
+         android:layout_marginTop="10dp"
+         app:layout_constraintBottom_toTopOf="@+id/ll_footer"
+         app:layout_constraintTop_toBottomOf="@id/tv_security_status">
+
+        <LinearLayout
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:padding="16dp"
+             android:orientation="vertical">
+
+            <TextView
+                 android:layout_height="wrap_content"
+                 android:layout_width="match_parent"
+                 android:fontFamily="monospace"
+                 android:textSize="13sp"
+                 android:textColor="#FFFFFF"
+                 android:id="@+id/tv_device_info"
+                 android:text="[ INJECTING VIETCORE KERNEL... ]" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <LinearLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:background="#1A1A1A"
+         android:gravity="center"
+         android:padding="12dp"
+         android:orientation="vertical"
+         app:layout_constraintBottom_toBottomOf="parent"
+         android:id="@+id/ll_footer">
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:fontFamily="monospace"
+             android:textSize="11sp"
+             android:textColor="#888888"
+             android:id="@+id/tv_author"
+             android:text="Developer: Nguyen Minh Toi" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:fontFamily="monospace"
+             android:textSize="10sp"
+             android:textColor="#444444"
+             android:layout_marginTop="2dp"
+             android:id="@+id/tv_version"
+             android:text="Version: VietCore 26.1.0-Omnis Pro" />
+
+    </LinearLayout>
+
+    <LinearLayout
+         android:layout_height="match_parent"
+         android:layout_width="match_parent"
+         android:visibility="gone"
+         android:background="#000000"
+         android:gravity="center"
+         android:clickable="true"
+         android:elevation="15dp"
+         android:padding="24dp"
+         android:orientation="vertical"
+         android:focusable="true"
+         android:id="@+id/error_overlay">
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:fontFamily="monospace"
+             android:textSize="50sp"
+             android:textColor="#FF0000"
+             android:id="@+id/tv_error_icon"
+             android:text="[ ! ]"
+             android:textStyle="bold" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:gravity="center"
+             android:fontFamily="monospace"
+             android:textSize="14sp"
+             android:textColor="#FF0000"
+             android:layout_marginTop="20dp"
+             android:id="@+id/tv_error_message"
+             android:text="SECURITY BREACH DETECTED"
+             android:textStyle="bold" />
+
+        <View
+             android:layout_height="1dp"
+             android:layout_width="100dp"
+             android:background="#FF0000"
+             android:layout_marginTop="15dp" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:gravity="center"
+             android:fontFamily="monospace"
+             android:textSize="12sp"
+             android:textColor="#FFFFFF"
+             android:layout_marginTop="20dp"
+             android:text="System has detected unauthorized modifications (Dex/Manifest/Root).\nThe application will self-destruct in 4 seconds for security reasons." />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
