@@ -21,13 +21,32 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * OmnisSecurity: Hệ thống bảo mật đa tầng cho VietCore 2026.
- * Đảm bảo toàn vẹn APK, chống giả lập, chặn OS nội địa và tự hủy khi bị can thiệp.
+ * Bổ sung: Cơ chế "Legacy OS Deprecation" - Khai tử Android đời cũ.
  */
 class OmnisSecurity(private val context: Context) {
 
     private val AES_KEY = "VIETCORE_SECURE_KEY_2026_TOI_MOD" 
     private val VALID_PROVIDER_DOMAIN = "vietcore.intelligence.gov"
     private val securityExecutor = Executors.newSingleThreadExecutor()
+
+    // --- 0. NGĂN CHẶN HỆ ĐIỀU HÀNH ĐỜI CŨ (NEW) ---
+    
+    /**
+     * Chỉ hỗ trợ từ Android 10 (API 29) trở lên.
+     * Các thiết bị chạy Android 9 trở xuống sẽ bị coi là không an toàn (Lỗi thời).
+     */
+    fun isLegacyOSDetected(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+    }
+
+    /**
+     * Kiểm tra xem phần cứng có đáp ứng tiêu chuẩn hiện đại không (64-bit).
+     * Điện thoại đời mới phải hỗ trợ kiến trúc ARM64-v8a.
+     */
+    fun isOutdatedHardware(): Boolean {
+        val abis = Build.SUPPORTED_ABIS
+        return abis.none { it.contains("arm64-v8a") }
+    }
 
     // --- 1. SIÊU NGĂN CHẶN GIẢ LẬP ---
     fun isEmulatorOrVirtualMachine(): Boolean {
@@ -59,7 +78,6 @@ class OmnisSecurity(private val context: Context) {
         val country = Locale.getDefault().country 
         val language = Locale.getDefault().language
 
-        // Kiểm tra Google Services Framework (GSF) - Đặc điểm của máy bản Global
         val isGlobalVersion = try {
             context.packageManager.getPackageInfo("com.google.android.gsf", 0)
             true
@@ -67,31 +85,25 @@ class OmnisSecurity(private val context: Context) {
             false
         }
 
-        // 1. Chặn máy Trung Quốc không có dịch vụ Google (Máy nội địa)
         if (!isGlobalVersion) {
             val chinaBrands = arrayOf("huawei", "xiaomi", "oppo", "vivo", "meizu", "zte", "honor")
             if (chinaBrands.any { manufacturer.contains(it) }) return true
         }
 
-        // 2. Chặn dựa trên các thuộc tính hệ thống ROM nội địa
         val isChinaRom = getSystemProperty("ro.miui.ui.version.name").isNotEmpty() || 
                          getSystemProperty("ro.build.version.emui").isNotEmpty() ||
                          getSystemProperty("ro.build.version.opporom").isNotEmpty() ||
                          getSystemProperty("ro.vivo.os.version").isNotEmpty()
         
         if (isChinaRom && !isGlobalVersion) return true
-
-        // 3. Nếu cài ngôn ngữ Trung Quốc mà không có GSF -> Coi như máy nội địa/xách tay
         if (language == "zh" && !isGlobalVersion) return true
 
-        // 4. Chặn vùng địa lý nhạy cảm (CN: Trung Quốc, KP: Triều Tiên)
         val restrictedCountries = arrayOf("CN", "KP") 
         if (restrictedCountries.contains(country) && !isGlobalVersion) return true
         
         return false
     }
 
-    // Hàm đọc thuộc tính hệ thống ẩn qua Reflection
     private fun getSystemProperty(key: String): String {
         return try {
             val c = Class.forName("android.os.SystemProperties")
@@ -101,8 +113,11 @@ class OmnisSecurity(private val context: Context) {
     }
 
     // --- 3. KIỂM TRA TÍNH TOÀN VẸN & TỰ HỦY ---
+
     fun isIntegrityCompromised(): Boolean {
-        return isRooted() || isHackerToolsDetected() || isAppCloned() || isDebugging() || 
+        // Tự động thêm kiểm tra đời máy lỗi thời vào danh sách vi phạm an toàn
+        return isLegacyOSDetected() || isOutdatedHardware() || isRooted() || 
+               isHackerToolsDetected() || isAppCloned() || isDebugging() || 
                isBootloaderUnlocked() || isCustomROMDetected() || isManifestTampered() || 
                isResourceModified() || isRestrictedRegionOrOS()
     }
@@ -252,7 +267,7 @@ class OmnisSecurity(private val context: Context) {
         return !isSignatureValid()
     }
 
-    // --- 6. NGĂN CHẶN THAY ĐỔI TÊN/LOGO (GỌI TỪ MAINACTIVITY) ---
+    // --- 6. NGĂN CHẶN THAY ĐỔI TÊN/LOGO ---
     fun isAppNameModified(originalName: String): Boolean {
         return try {
             val currentLabel = context.applicationInfo.loadLabel(context.packageManager).toString()
@@ -261,7 +276,6 @@ class OmnisSecurity(private val context: Context) {
     }
 
     fun isAppIconModified(): Boolean {
-        // Kiểm tra dựa trên tính hợp lệ của chữ ký (Nếu đổi Logo APK sẽ phải ký lại)
         return !isSignatureValid()
     }
 }
