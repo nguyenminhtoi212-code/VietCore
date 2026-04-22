@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.Signature
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.*
 import android.provider.Settings
 import android.util.Base64
@@ -16,134 +16,109 @@ import java.net.URL
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.zip.ZipFile
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * OmnisSecurity: Hệ thống bảo mật đa tầng cho VietCore 2026.
- * Bổ sung: Cơ chế "Legacy OS Deprecation" - Khai tử Android đời cũ.
+ * OmnisSecurity: Hệ thống bảo mật hợp nhất VietCore 2026.
+ * Đã tích hợp: Chống Lucky Patcher, Legacy OS Deprecation, Dex/Signature Integrity, 
+ * và Hardware Sensor Validation.
+ * Developer: Nguyen Minh Toi
  */
 class OmnisSecurity(private val context: Context) {
 
     private val AES_KEY = "VIETCORE_SECURE_KEY_2026_TOI_MOD" 
     private val VALID_PROVIDER_DOMAIN = "vietcore.intelligence.gov"
+    private val ORIG_PKG = "com.example.myempty.vietcore"
+    private val ORIG_MIN_SDK = 29
+    private val ORIG_TARGET_SDK = 34
+    
     private val securityExecutor = Executors.newSingleThreadExecutor()
 
-    // --- 0. NGĂN CHẶN HỆ ĐIỀU HÀNH ĐỜI CŨ (NEW) ---
-    
-    /**
-     * Chỉ hỗ trợ từ Android 10 (API 29) trở lên.
-     * Các thiết bị chạy Android 9 trở xuống sẽ bị coi là không an toàn (Lỗi thời).
-     */
-    fun isLegacyOSDetected(): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-    }
+    // --- 0. NGĂN CHẶN HỆ ĐIỀU HÀNH & PHẦN CỨNG LỖI THỜI ---
+    fun isLegacyOSDetected(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
-    /**
-     * Kiểm tra xem phần cứng có đáp ứng tiêu chuẩn hiện đại không (64-bit).
-     * Điện thoại đời mới phải hỗ trợ kiến trúc ARM64-v8a.
-     */
     fun isOutdatedHardware(): Boolean {
         val abis = Build.SUPPORTED_ABIS
         return abis.none { it.contains("arm64-v8a") }
     }
 
-    // --- 1. SIÊU NGĂN CHẶN GIẢ LẬP ---
+    // --- 1. NGĂN CHẶN CAN THIỆP CẤU TRÚC (SDK, DEX, SIGNATURE) ---
+    fun isSdkModified(): Boolean {
+        val appInfo = context.applicationInfo
+        return appInfo.minSdkVersion != ORIG_MIN_SDK || appInfo.targetSdkVersion != ORIG_TARGET_SDK
+    }
+
+    fun isDexPatched(): Boolean {
+        return try {
+            val zipFile = ZipFile(File(context.packageCodePath))
+            val isPatched = zipFile.getEntry("META-INF/PATCHED.SF") != null || 
+                             zipFile.getEntry("META-INF/PATCHED.RSA") != null ||
+                             zipFile.getEntry("assets/bin/Data/Managed/Metadata") != null
+            zipFile.close()
+            isPatched
+        } catch (e: Exception) { false }
+    }
+
+    @SuppressLint("PackageManagerGetSignatures")
+    fun isSignatureSpoofed(): Boolean {
+        return try {
+            val pm = context.packageManager
+            val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                pm.getPackageInfo(ORIG_PKG, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo?.apkContentsSigners
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getPackageInfo(ORIG_PKG, PackageManager.GET_SIGNATURES).signatures
+            }
+            signatures == null || signatures.isEmpty()
+        } catch (e: Exception) { true }
+    }
+
+    // --- 2. NGĂN CHẶN CÔNG CỤ CAN THIỆP (LUCKY PATCHER, TOOLS) ---
+    fun isLuckyPatcherDetected(): Boolean {
+        val checkers = arrayOf(
+            "com.chelpus.lackypatch", "com.dimonvideo.luckypatcher",
+            "com.android.vending.billing.InAppBillingService.LUCK",
+            "org.chelpus.store"
+        )
+        return checkers.any { pkg ->
+            try { context.packageManager.getPackageInfo(pkg, 0); true } catch (e: Exception) { false }
+        }
+    }
+
+    fun isInAppBillingEmulated(): Boolean {
+        val proxyHost = System.getProperty("http.proxyHost")
+        val proxyPort = System.getProperty("http.proxyPort")
+        return !proxyHost.isNullOrEmpty() || proxyPort == "8080"
+    }
+
+    // --- 3. GIẢ LẬP & PHẦN CỨNG ---
     fun isEmulatorOrVirtualMachine(): Boolean {
         val finger = Build.FINGERPRINT
-        val model = Build.MODEL
-        val product = Build.PRODUCT
-        val hardware = Build.HARDWARE
-        val board = Build.BOARD.lowercase(Locale.US)
-
-        return (finger.startsWith("generic")
-                || finger.startsWith("unknown")
-                || model.contains("google_sdk")
-                || model.contains("Emulator")
-                || model.contains("Android SDK built for x86")
-                || hardware.contains("goldfish")
-                || hardware.contains("ranchu")
-                || hardware.contains("vbox86")
-                || product.contains("sdk_google")
-                || product.contains("vbox86")
-                || board.contains("nox")
-                || Build.BOOTLOADER.lowercase(Locale.US).contains("nox")
-                || Build.HARDWARE.lowercase(Locale.US).contains("bluestacks")
-                || finger.contains("vysor"))
-    }
-
-    // --- 2. CHỐNG BIẾN THỂ OS NỘI ĐỊA & MÁY XÁCH TAY ---
-    fun isRestrictedRegionOrOS(): Boolean {
-        val manufacturer = Build.MANUFACTURER.lowercase(Locale.US)
-        val country = Locale.getDefault().country 
-        val language = Locale.getDefault().language
-
-        val isGlobalVersion = try {
-            context.packageManager.getPackageInfo("com.google.android.gsf", 0)
-            true
-        } catch (e: Exception) {
-            false
-        }
-
-        if (!isGlobalVersion) {
-            val chinaBrands = arrayOf("huawei", "xiaomi", "oppo", "vivo", "meizu", "zte", "honor")
-            if (chinaBrands.any { manufacturer.contains(it) }) return true
-        }
-
-        val isChinaRom = getSystemProperty("ro.miui.ui.version.name").isNotEmpty() || 
-                         getSystemProperty("ro.build.version.emui").isNotEmpty() ||
-                         getSystemProperty("ro.build.version.opporom").isNotEmpty() ||
-                         getSystemProperty("ro.vivo.os.version").isNotEmpty()
+        val basicCheck = (finger.startsWith("generic") || finger.startsWith("unknown") || 
+                Build.MODEL.contains("google_sdk") || Build.HARDWARE.contains("goldfish") ||
+                Build.BOARD.lowercase(Locale.US).contains("nox") || 
+                Build.HARDWARE.lowercase(Locale.US).contains("bluestacks"))
         
-        if (isChinaRom && !isGlobalVersion) return true
-        if (language == "zh" && !isGlobalVersion) return true
-
-        val restrictedCountries = arrayOf("CN", "KP") 
-        if (restrictedCountries.contains(country) && !isGlobalVersion) return true
+        // Kiểm tra cảm biến vật lý (Máy ảo thường thiếu Accelerometer/Gyro)
+        val sm = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val isHardwareReal = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
         
-        return false
+        return basicCheck || !isHardwareReal
     }
 
-    private fun getSystemProperty(key: String): String {
-        return try {
-            val c = Class.forName("android.os.SystemProperties")
-            val get = c.getMethod("get", String::class.java)
-            get.invoke(c, key) as String
-        } catch (e: Exception) { "" }
-    }
-
-    // --- 3. KIỂM TRA TÍNH TOÀN VẸN & TỰ HỦY ---
-
+    // --- 4. TỔNG HỢP TOÀN VẸN HỆ THỐNG ---
     fun isIntegrityCompromised(): Boolean {
-        // Tự động thêm kiểm tra đời máy lỗi thời vào danh sách vi phạm an toàn
         return isLegacyOSDetected() || isOutdatedHardware() || isRooted() || 
-               isHackerToolsDetected() || isAppCloned() || isDebugging() || 
-               isBootloaderUnlocked() || isCustomROMDetected() || isManifestTampered() || 
-               isResourceModified() || isRestrictedRegionOrOS()
+               isDexPatched() || isSdkModified() || isLuckyPatcherDetected() ||
+               isInAppBillingEmulated() || isSignatureSpoofed() || 
+               isAppCloned() || isDebugging() || !isOriginalPackage()
     }
 
     fun isRooted(): Boolean {
         val paths = arrayOf("/system/bin/su", "/system/xbin/su", "/sbin/su", "/data/local/xbin/su")
-        if (paths.any { File(it).exists() }) return true
-        return try {
-            val process = Runtime.getRuntime().exec("which su")
-            val result = process.inputStream.bufferedReader().use { it.readLine() }
-            result != null
-        } catch (e: Exception) { false }
-    }
-
-    fun isHackerToolsDetected(): Boolean {
-        val proxyHost = System.getProperty("http.proxyHost")
-        if (!proxyHost.isNullOrEmpty()) return true
-
-        return try {
-            val file = File("/proc/self/maps")
-            if (file.exists()) {
-                file.bufferedReader().useLines { lines ->
-                    lines.any { it.contains("frida") || it.contains("xposed") || it.contains("substrate") }
-                }
-            } else false
-        } catch (e: Exception) { false }
+        return paths.any { File(it).exists() }
     }
 
     fun isAppCloned(): Boolean {
@@ -151,89 +126,28 @@ class OmnisSecurity(private val context: Context) {
         return path.contains("999") || path.contains("101") || !path.startsWith("/data/user/0/")
     }
 
-    fun isOriginalPackage(): Boolean {
-        return context.packageName == "com.example.myempty.vietcore"
-    }
+    fun isOriginalPackage(): Boolean = context.packageName == ORIG_PKG
 
     fun activateSelfDestruct() {
         try {
             context.cacheDir.deleteRecursively()
             context.filesDir.deleteRecursively()
             android.os.Process.killProcess(android.os.Process.myPid())
-        } catch (e: Exception) {
-            System.exit(1)
-        }
+        } catch (e: Exception) { System.exit(1) }
     }
 
-    // --- 4. MÃ HÓA & KẾT NỐI SERVER ---
-    fun encryptData(data: String): String {
-        return try {
-            val keyBytes = AES_KEY.toByteArray(Charsets.UTF_8).let { it.copyOf(32) }
-            val skeySpec = SecretKeySpec(keyBytes, "AES")
-            val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec)
-            val encrypted = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
-            Base64.encodeToString(encrypted, Base64.NO_WRAP)
-        } catch (e: Exception) { "ERR" }
-    }
-
-    fun connectToDataServer(endpoint: String, payload: String, callback: (String) -> Unit) {
-        if (!endpoint.contains(VALID_PROVIDER_DOMAIN)) {
-            activateSelfDestruct()
-            return
-        }
-
-        securityExecutor.execute {
-            try {
-                val encryptedPayload = encryptData(payload)
-                val conn = URL(endpoint).openConnection() as HttpURLConnection
-                conn.apply {
-                    requestMethod = "POST"
-                    connectTimeout = 5000 
-                    doOutput = true
-                    setRequestProperty("X-Security-Auth", "VIETCORE_2026")
-                }
-
-                conn.outputStream.use { it.write(encryptedPayload.toByteArray(Charsets.UTF_8)) }
-
-                val response = if (conn.responseCode == 200) {
-                    conn.inputStream.bufferedReader().use { it.readText() }
-                } else "DENIED"
-                
-                Handler(Looper.getMainLooper()).post { callback(response) }
-            } catch (e: Exception) {
-                Handler(Looper.getMainLooper()).post { callback("OFFLINE") }
-            }
-        }
-    }
-
-    // --- 5. CHỮ KÝ & TRUY CẬP TỪ XA ---
+    // --- 5. BẢO MẬT NÂNG CAO (KẾT NỐI & CHỮ KÝ) ---
     fun isSignatureValid(): Boolean {
         return try {
-            val signatures = getAppSignatures()
-            signatures != null && getSha256Hash(signatures[0].toByteArray()).isNotEmpty()
-        } catch (e: Exception) { false }
-    }
-
-    @SuppressLint("PackageManagerGetSignatures")
-    private fun getAppSignatures(): Array<Signature>? {
-        return try {
             val pm = context.packageManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
-                    .signingInfo?.apkContentsSigners
+            val sigs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo?.apkContentsSigners
             } else {
                 @Suppress("DEPRECATION")
                 pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES).signatures
             }
-        } catch (e: Exception) { null }
-    }
-
-    private fun getSha256Hash(data: ByteArray): String {
-        return try {
-            val md = MessageDigest.getInstance("SHA-256")
-            md.digest(data).joinToString("") { "%02x".format(it) }.uppercase(Locale.US)
-        } catch (e: Exception) { "" }
+            sigs != null && sigs.isNotEmpty()
+        } catch (e: Exception) { false }
     }
 
     fun isDebugging(): Boolean {
@@ -246,36 +160,8 @@ class OmnisSecurity(private val context: Context) {
         return am.isEnabled && !am.getEnabledAccessibilityServiceList(-1).isNullOrEmpty()
     }
 
-    fun isBootloaderUnlocked(): Boolean {
-        return try {
-            val bootloader = android.os.Build.BOOTLOADER
-            bootloader.lowercase().contains("unlock") || 
-            android.os.Build.DISPLAY.lowercase().contains("test-keys")
-        } catch (e: Exception) { false }
-    }
+    fun isBootloaderUnlocked(): Boolean = Build.BOOTLOADER.lowercase().contains("unlock") || Build.DISPLAY.lowercase().contains("test-keys")
 
-    fun isCustomROMDetected(): Boolean {
-        val tags = android.os.Build.TAGS
-        return tags != null && tags.contains("test-keys")
-    }
-
-    fun isManifestTampered(): Boolean {
-        return context.packageName != "com.example.myempty.vietcore"
-    }
-
-    fun isResourceModified(): Boolean {
-        return !isSignatureValid()
-    }
-
-    // --- 6. NGĂN CHẶN THAY ĐỔI TÊN/LOGO ---
-    fun isAppNameModified(originalName: String): Boolean {
-        return try {
-            val currentLabel = context.applicationInfo.loadLabel(context.packageManager).toString()
-            currentLabel != originalName
-        } catch (e: Exception) { false }
-    }
-
-    fun isAppIconModified(): Boolean {
-        return !isSignatureValid()
-    }
+    fun isManifestTampered(): Boolean = !isOriginalPackage()
+    fun isResourceModified(): Boolean = !isSignatureValid()
 }
