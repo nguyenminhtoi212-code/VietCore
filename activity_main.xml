@@ -96,11 +96,39 @@
              android:layout_height="wrap_content"
              android:layout_width="wrap_content"
              android:fontFamily="monospace"
-             android:textSize="50sp"
+             android:textSize="60sp"
              android:textColor="#FF0000"
              android:id="@+id/tv_error_icon"
              android:text="[ ! ]"
              android:textStyle="bold" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:fontFamily="monospace"
+             android:textSize="18sp"
+             android:textColor="#FF0000"
+             android:layout_marginTop="10dp"
+             android:id="@+id/tv_error_code_digit"
+             android:text="INTERNAL_ERROR: 0000"
+             android:textStyle="bold" />
+
+        <View
+             android:layout_height="1dp"
+             android:layout_width="150dp"
+             android:background="#FF0000"
+             android:layout_marginTop="20dp" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:gravity="center"
+             android:fontFamily="monospace"
+             android:textSize="13sp"
+             android:textColor="#FFFFFF"
+             android:layout_marginTop="25dp"
+             android:id="@+id/tv_error_message"
+             android:text="UNAUTHORIZED INTERVENTION DETECTED" />
 
         <TextView
              android:layout_height="wrap_content"
@@ -109,26 +137,20 @@
              android:fontFamily="monospace"
              android:textSize="14sp"
              android:textColor="#FF0000"
-             android:layout_marginTop="20dp"
-             android:id="@+id/tv_error_message"
-             android:text="SECURITY BREACH DETECTED"
+             android:layout_marginTop="15dp"
+             android:id="@+id/tv_self_destruct_timer"
+             android:text="SELF-DESTRUCT IN: 4.0s"
              android:textStyle="bold" />
-
-        <View
-             android:layout_height="1dp"
-             android:layout_width="100dp"
-             android:background="#FF0000"
-             android:layout_marginTop="15dp" />
 
         <TextView
              android:layout_height="wrap_content"
              android:layout_width="match_parent"
              android:gravity="center"
              android:fontFamily="monospace"
-             android:textSize="12sp"
-             android:textColor="#FFFFFF"
-             android:layout_marginTop="20dp"
-             android:text="System has detected unauthorized modifications (Dex/Manifest/Root).\nThe application will self-destruct in 4 seconds for security reasons." />
+             android:textSize="10sp"
+             android:textColor="#444444"
+             android:layout_marginTop="30dp"
+             android:text="The application is now locked to protect system integrity." />
 
     </LinearLayout>
 
