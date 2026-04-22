@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,11 +23,9 @@ class MainActivity : AppCompatActivity() {
     private var updateJob: Job? = null
     private var selfDestructStarted = false
 
-    // Mã màu đồng bộ VietCore
     private val COLOR_MATRIX_GREEN = Color.parseColor("#00FF41")
     private val COLOR_DANGER_RED = Color.parseColor("#FF0000")
     private val COLOR_WARNING_ORANGE = Color.parseColor("#FF8C00")
-    private val COLOR_API_PURPLE = Color.parseColor("#D000FF")
     private val COLOR_SCANNING_CYAN = Color.parseColor("#00FFFF")
     private val COLOR_OFFLINE_YELLOW = Color.parseColor("#FFFF00")
 
@@ -49,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         tvStatus?.text = "OMNIS: INITIALIZING SECURE ENGINE..."
         tvStatus?.setTextColor(COLOR_SCANNING_CYAN)
 
-        verifySystemApi()
+        verifyGlobalNetworkApi()
         startRealtimeMonitoring()
     }
 
@@ -58,45 +57,48 @@ class MainActivity : AppCompatActivity() {
         val tvStatus = findViewById<TextView>(R.id.tv_security_status)
         val errorOverlay = findViewById<View>(R.id.error_overlay)
         val tvErrorMessage = findViewById<TextView>(R.id.tv_error_message)
+        val tvErrorCodeDigit = findViewById<TextView>(R.id.tv_error_code_digit)
 
         updateJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    // --- 1. NHẬN DIỆN CHỦ SỞ HỮU (DEVELOPER) ---
-                    // Fix lỗi Unresolved bằng cách kiểm tra trực tiếp từ Simulator/Security
-                    val isOwner = security.isOriginalPackage() && !security.isDexPatched()
+                    // --- KHÔI PHỤC & ĐỒNG BỘ CÁC BIẾN KIỂM TRA ---
+                    // Fix lỗi Unresolved bằng cách sử dụng các hàm đã khôi phục trong OmnisSecurity
+                    val isOriginal = security.isOriginalPackage()
+                    val isOwner = isOriginal && !security.isSignatureValid() // Logic nhận diện chủ sở hữu
 
-                    // --- 2. PHÂN LOẠI THIẾT BỊ & HỆ THỐNG ---
                     val isLegacyOS = security.isLegacyOSDetected()
                     val isOutdatedHW = security.isOutdatedHardware()
                     val isEmulator = security.isEmulatorOrVirtualMachine()
                     val isRooted = security.isRooted()
+                    val isCustomROM = security.isCustomROMDetected()
+                    val isBootloaderUnlocked = security.isBootloaderUnlocked()
+                    
                     val isCloned = security.isAppCloned()
-
-                    // --- 3. TOÀN VẸN MÃ NGUỒN (CHỈ KHÓA KHI CÓ CAN THIỆP) ---
-                    val isModified = !security.isOriginalPackage()
-                    val isDexTampered = security.isDexPatched()
-                    val isSignatureBroken = security.isSignatureSpoofed()
+                    val isDebugging = security.isDebugging()
+                    val isHackerTools = security.isHackerToolsDetected()
+                    
+                    // Fix lỗi truyền tham số cho AppName
+                    val isNameTampered = security.isAppNameModified("VietCore")
+                    val isIconTampered = security.isAppIconModified()
                     val isManifestBroken = security.isManifestTampered()
+                    val isResourceBroken = security.isResourceModified()
 
-                    // LOGIC: Nếu là chủ sở hữu (isOwner) và không có can thiệp sâu vào DEX/Signature, 
-                    // cho phép sử dụng bình thường kể cả khi bật Debug/Root nhẹ.
                     val currentViolation = when {
-                        // CHỈ KHÓA KHI: Có hành vi phá hoại mã nguồn (Hack)
-                        isDexTampered || isSignatureBroken || isModified || isManifestBroken -> "APK INTEGRITY BREACH"
-                        
-                        // CẢNH BÁO MÔI TRƯỜNG (Nhưng không khóa nếu là máy của Minh Tới)
-                        !isOwner && (isEmulator || isCloned) -> "UNAUTHORIZED ENVIRONMENT"
-                        !isOwner && isLegacyOS -> "OUTDATED ANDROID VERSION"
-                        
+                        !isOriginal || isManifestBroken || isResourceBroken -> "APK INTEGRITY BREACH"
+                        isNameTampered || isIconTampered -> "UI TAMPERING DETECTED"
+                        isHackerTools || isDebugging -> "HACKER TOOLS DETECTED"
+                        !isOwner && (isRooted || isEmulator) -> "UNSECURE ENVIRONMENT"
+                        !isOwner && (isCustomROM || isBootloaderUnlocked) -> "HARDWARE BREACH"
                         else -> null
                     }
 
                     withContext(Dispatchers.Main) {
                         if (currentViolation != null) {
+                            val randomCode = Random.nextInt(1000, 9999)
+                            tvErrorCodeDigit?.text = "INTERNAL_ERROR: $randomCode"
                             handleBankGradeViolation(currentViolation, tvStatus, errorOverlay, tvErrorMessage)
                         } else {
-                            // TRẠNG THÁI BÌNH THƯỜNG: Mượt mà và ổn định
                             val specs = simulator.getRealTimeSpecs()
                             tvDevice?.text = specs
                             updateSecurityStatusLabel(tvStatus)
@@ -111,17 +113,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleBankGradeViolation(reason: String, statusView: TextView?, overlay: View?, errorText: TextView?) {
-        // Chỉ kích hoạt khóa khi phát hiện đúng sai phạm
+        val tvTimer = findViewById<TextView>(R.id.tv_self_destruct_timer)
         statusView?.text = "SHIELD: TERMINATED"
         statusView?.setTextColor(COLOR_DANGER_RED)
-
         overlay?.visibility = View.VISIBLE
-        errorText?.text = "SYSTEM PROTECTION ACTIVE\n--------------------------\n$reason\n\nUnauthorized modification detected."
+        
+        errorText?.text = "UNAUTHORIZED INTERVENTION DETECTED"
 
         if (!selfDestructStarted) {
             selfDestructStarted = true
-            lifecycleScope.launch {
-                delay(4000) 
+            lifecycleScope.launch(Dispatchers.Main) {
+                // Đếm ngược mượt mà từ 4.0s xuống 0.0s (40 bước, mỗi bước 100ms)
+                for (i in 40 downTo 0) {
+                    val seconds = i / 10.0
+                    tvTimer?.text = "SELF-DESTRUCT IN: ${String.format("%.1fs", seconds)}"
+                    delay(100) // Tốc độ đếm từ từ và mượt mà
+                }
                 security.activateSelfDestruct()
             }
         }
@@ -130,12 +137,12 @@ class MainActivity : AppCompatActivity() {
     private fun updateSecurityStatusLabel(statusView: TextView?) {
         if (statusView == null) return
         when (apiStatus) {
-            "GENUINE" -> {
+            "1001" -> {
                 statusView.text = "OMNIS: SYSTEM VERIFIED [SECURE]"
                 statusView.setTextColor(COLOR_MATRIX_GREEN)
             }
-            "VIRUS_IP", "API_FAKE" -> {
-                statusView.text = "SECURITY: EXTERNAL THREAT DETECTED"
+            "4004" -> {
+                statusView.text = "SECURITY: NODE THREAT DETECTED"
                 statusView.setTextColor(COLOR_WARNING_ORANGE)
             }
             else -> {
@@ -145,18 +152,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isRunningOnTV(): Boolean {
-        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-        return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
-    }
-
-    private fun verifySystemApi() {
-        lifecycleScope.launch {
+    private fun verifyGlobalNetworkApi() {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Giả lập xác thực API thầm lặng để không gây lag
-                delay(1000)
-                apiStatus = "GENUINE"
-                updateSecurityStatusLabel(findViewById(R.id.tv_security_status))
+                delay(1500)
+                // Fix lỗi Unresolved reference 'isInAppBillingEmulated'
+                // Sử dụng hàm kiểm tra Tools để thay thế logic verify mạng lưới thầm lặng
+                val isThreat = security.isHackerToolsDetected()
+                withContext(Dispatchers.Main) {
+                    apiStatus = if (!isThreat) "1001" else "4004"
+                    updateSecurityStatusLabel(findViewById(R.id.tv_security_status))
+                }
             } catch (e: Exception) { }
         }
     }
@@ -177,4 +183,3 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 }
- 
