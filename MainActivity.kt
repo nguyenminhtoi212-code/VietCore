@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
             setTextColor(Color.WHITE)
         }
         findViewById<TextView>(R.id.tv_version)?.apply {
-            text = "Core: VietCore 26.1.0-Omnis Pro"
+            text = "Core: VietCore 26.1.1-Omnis Pro"
             setTextColor(COLOR_SCANNING_CYAN)
         }
     }
