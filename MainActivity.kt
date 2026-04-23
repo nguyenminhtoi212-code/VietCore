@@ -1,8 +1,5 @@
 package com.example.myempty.vietcore
 
-import android.app.UiModeManager
-import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
@@ -11,18 +8,20 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
+import java.util.Locale
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var security: OmnisSecurity
-    private lateinit var simulator: DeviceSimulator 
-    
-    private var isInitialLoaded = false
-    private var apiStatus = "PENDING" 
+    private lateinit var simulator: DeviceSimulator
+
+    private var apiStatus = "PENDING"
     private var updateJob: Job? = null
     private var selfDestructStarted = false
+    private var currentErrorCode: Int = 0
 
+    // Bảng màu hệ thống
     private val COLOR_MATRIX_GREEN = Color.parseColor("#00FF41")
     private val COLOR_DANGER_RED = Color.parseColor("#FF0000")
     private val COLOR_WARNING_ORANGE = Color.parseColor("#FF8C00")
@@ -31,24 +30,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
+        // Lớp bảo mật chặn Capture/Record
         window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE, 
+            WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
         )
-        
+
         setContentView(R.layout.activity_main)
 
         security = OmnisSecurity(this)
-        simulator = DeviceSimulator(this) 
+        simulator = DeviceSimulator(this)
 
         setupFooterInfo()
-
-        val tvStatus = findViewById<TextView>(R.id.tv_security_status)
-        tvStatus?.text = "OMNIS: INITIALIZING SECURE ENGINE..."
-        tvStatus?.setTextColor(COLOR_SCANNING_CYAN)
-
-        verifyGlobalNetworkApi()
         startRealtimeMonitoring()
     }
 
@@ -62,10 +56,9 @@ class MainActivity : AppCompatActivity() {
         updateJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    // --- KHÔI PHỤC & ĐỒNG BỘ CÁC BIẾN KIỂM TRA ---
-                    // Fix lỗi Unresolved bằng cách sử dụng các hàm đã khôi phục trong OmnisSecurity
+                    // --- KHÔI PHỤC & ĐỒNG BỘ CÁC BIẾN KIỂM TRA TOÀN DIỆN ---
                     val isOriginal = security.isOriginalPackage()
-                    val isOwner = isOriginal && !security.isSignatureValid() // Logic nhận diện chủ sở hữu
+                    val isOwner = isOriginal && !security.isSignatureValid()
 
                     val isLegacyOS = security.isLegacyOSDetected()
                     val isOutdatedHW = security.isOutdatedHardware()
@@ -73,63 +66,73 @@ class MainActivity : AppCompatActivity() {
                     val isRooted = security.isRooted()
                     val isCustomROM = security.isCustomROMDetected()
                     val isBootloaderUnlocked = security.isBootloaderUnlocked()
-                    
+
                     val isCloned = security.isAppCloned()
                     val isDebugging = security.isDebugging()
                     val isHackerTools = security.isHackerToolsDetected()
-                    
-                    // Fix lỗi truyền tham số cho AppName
+
                     val isNameTampered = security.isAppNameModified("VietCore")
                     val isIconTampered = security.isAppIconModified()
                     val isManifestBroken = security.isManifestTampered()
                     val isResourceBroken = security.isResourceModified()
 
+                    // Xác định loại vi phạm dựa trên các biến đã khôi phục
                     val currentViolation = when {
                         !isOriginal || isManifestBroken || isResourceBroken -> "APK INTEGRITY BREACH"
                         isNameTampered || isIconTampered -> "UI TAMPERING DETECTED"
-                        isHackerTools || isDebugging -> "HACKER TOOLS DETECTED"
+                        isHackerTools || isDebugging || isCloned -> "HACKER TOOLS DETECTED"
                         !isOwner && (isRooted || isEmulator) -> "UNSECURE ENVIRONMENT"
                         !isOwner && (isCustomROM || isBootloaderUnlocked) -> "HARDWARE BREACH"
+                        isLegacyOS || isOutdatedHW -> "OUTDATED ENVIRONMENT"
                         else -> null
                     }
 
                     withContext(Dispatchers.Main) {
                         if (currentViolation != null) {
-                            val randomCode = Random.nextInt(1000, 9999)
-                            tvErrorCodeDigit?.text = "INTERNAL_ERROR: $randomCode"
+                            // Cố định mã lỗi một khi đã phát hiện vi phạm
+                            if (currentErrorCode == 0) {
+                                currentErrorCode = Random.nextInt(1000, 9999)
+                            }
+                            tvErrorCodeDigit?.text = "INTERNAL_ERROR: $currentErrorCode"
                             handleBankGradeViolation(currentViolation, tvStatus, errorOverlay, tvErrorMessage)
                         } else {
                             val specs = simulator.getRealTimeSpecs()
                             tvDevice?.text = specs
                             updateSecurityStatusLabel(tvStatus)
                             errorOverlay?.visibility = View.GONE
-                            isInitialLoaded = true
+                            currentErrorCode = 0 // Reset nếu an toàn
                         }
                     }
-                } catch (e: Exception) { }
-                delay(2000) 
+                } catch (e: Exception) {
+                    // Log error nếu cần thiết trong môi trường dev
+                }
+                delay(2000)
             }
         }
     }
 
     private fun handleBankGradeViolation(reason: String, statusView: TextView?, overlay: View?, errorText: TextView?) {
         val tvTimer = findViewById<TextView>(R.id.tv_self_destruct_timer)
+
         statusView?.text = "SHIELD: TERMINATED"
         statusView?.setTextColor(COLOR_DANGER_RED)
         overlay?.visibility = View.VISIBLE
-        
-        errorText?.text = "UNAUTHORIZED INTERVENTION DETECTED"
+        errorText?.text = "UNAUTHORIZED INTERVENTION: $reason"
 
         if (!selfDestructStarted) {
             selfDestructStarted = true
+            updateJob?.cancel() // Dừng quét để thực hiện tự hủy
+
             lifecycleScope.launch(Dispatchers.Main) {
-                // Đếm ngược mượt mà từ 4.0s xuống 0.0s (40 bước, mỗi bước 100ms)
+                // Đếm ngược 4 giây (40 bước, mỗi bước 100ms) để đảm bảo tốc độ không quá nhanh
                 for (i in 40 downTo 0) {
                     val seconds = i / 10.0
-                    tvTimer?.text = "SELF-DESTRUCT IN: ${String.format("%.1fs", seconds)}"
-                    delay(100) // Tốc độ đếm từ từ và mượt mà
+                    tvTimer?.text = String.format(Locale.US, "SELF-DESTRUCT IN: %.1fs", seconds)
+                    delay(100)
                 }
+                // Thực thi lệnh tự hủy cuối cùng
                 security.activateSelfDestruct()
+                finishAffinity()
             }
         }
     }
@@ -152,28 +155,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun verifyGlobalNetworkApi() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                delay(1500)
-                // Fix lỗi Unresolved reference 'isInAppBillingEmulated'
-                // Sử dụng hàm kiểm tra Tools để thay thế logic verify mạng lưới thầm lặng
-                val isThreat = security.isHackerToolsDetected()
-                withContext(Dispatchers.Main) {
-                    apiStatus = if (!isThreat) "1001" else "4004"
-                    updateSecurityStatusLabel(findViewById(R.id.tv_security_status))
-                }
-            } catch (e: Exception) { }
-        }
-    }
-
     private fun setupFooterInfo() {
         findViewById<TextView>(R.id.tv_author)?.apply {
             text = "Developer: Nguyen Minh Toi"
             setTextColor(Color.WHITE)
         }
         findViewById<TextView>(R.id.tv_version)?.apply {
-            text = "Core: VietCore 26.1.1-Omnis Pro"
+            text = "Core: VietCore 26.1.2-Omnis Pro"
             setTextColor(COLOR_SCANNING_CYAN)
         }
     }
