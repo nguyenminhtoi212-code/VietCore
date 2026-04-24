@@ -21,9 +21,7 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * OmnisSecurity: Hệ thống bảo mật đa tầng cho VietCore 2026.
- * Bổ sung: 
- * 1. Ngăn chặn cài đặt từ kho APK lạ (APK Source Validation).
- * 2. Siết chặt kiểm tra cấu trúc Manifest (Permissions & Activities).
+ * Cơ chế siết chặt: Nguồn APK, Cấu trúc Manifest, Integrity, và Môi trường thực thi.
  */
 class OmnisSecurity(private val context: Context) {
 
@@ -64,11 +62,10 @@ class OmnisSecurity(private val context: Context) {
         return false
     }
 
-    // --- 3. SIẾT CHẶT NGUỒN GỐC APK & CẤU TRÚC HỆ THỐNG (MỚI) ---
+    // --- 3. SIẾT CHẶT NGUỒN GỐC APK & CẤU TRÚC HỆ THỐNG ---
 
     /**
      * Ngăn chặn cài đặt từ các kho APK Mod/Giả mạo.
-     * Chỉ chấp nhận cài đặt trực tiếp (từ Dev) hoặc các nguồn uy tín.
      */
     fun isInstallerUnverified(): Boolean {
         val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -78,19 +75,18 @@ class OmnisSecurity(private val context: Context) {
             context.packageManager.getInstallerPackageName(context.packageName)
         }
         
-        // Danh sách đen các kho APK phổ biến thường chứa mã độc/mod
         val blacklistedSources = arrayOf(
-            "com.android.vending", // Chặn nếu bạn muốn chỉ cho phép cài thủ công qua file nội bộ
-            "com.amazon.venezia", "com.apkpure.a3", "com.apkmirror.helper"
+            "com.android.vending",
+            "com.amazon.venezia", 
+            "com.apkpure.a3", 
+            "com.apkmirror.helper"
         )
         
-        // Nếu app được cài từ nguồn lạ không rõ ràng, đánh dấu là rủi ro
         return installer != null && blacklistedSources.contains(installer)
     }
 
     /**
-     * Siết chặt kiểm tra quyền (Permissions) và Hoạt động (Activities).
-     * Nếu hacker thêm quyền lạ hoặc Activity lạ vào Manifest, ứng dụng sẽ tự hủy.
+     * Kiểm tra thay đổi trái phép quyền (Permissions) và Hoạt động (Activities) trong Manifest.
      */
     fun isManifestStructuralTampered(): Boolean {
         return try {
@@ -99,8 +95,6 @@ class OmnisSecurity(private val context: Context) {
                 PackageManager.GET_PERMISSIONS or PackageManager.GET_ACTIVITIES
             )
             
-            // Ví dụ: VietCore gốc chỉ có 5 Activities và 3 Quyền. 
-            // Nếu con số này thay đổi (hacker thêm vào), coi như bị xâm nhập.
             val maxAllowedPermissions = 10 
             val maxAllowedActivities = 5
 
@@ -154,7 +148,7 @@ class OmnisSecurity(private val context: Context) {
         } catch (e: Exception) { System.exit(1) }
     }
 
-    // --- 5. MÃ HÓA & KẾT NỐI SERVER ---
+    // --- 5. MÃ HÓA DỮ LIỆU ---
     fun encryptData(data: String): String {
         return try {
             val keyBytes = AES_KEY.toByteArray(Charsets.UTF_8).let { it.copyOf(32) }
@@ -166,7 +160,7 @@ class OmnisSecurity(private val context: Context) {
         } catch (e: Exception) { "ERR" }
     }
 
-    // --- 6. CHỮ KÝ & TRUY CẬP TỪ XA ---
+    // --- 6. KIỂM TRA CHỮ KÝ & THAY ĐỔI UI ---
     fun isSignatureValid(): Boolean {
         return try {
             val signatures = getAppSignatures()
@@ -202,8 +196,10 @@ class OmnisSecurity(private val context: Context) {
     fun isResourceModified(): Boolean = !isSignatureValid()
 
     fun isAppNameModified(originalName: String): Boolean {
-        val currentLabel = context.applicationInfo.loadLabel(context.packageManager).toString()
-        return currentLabel != originalName
+        return try {
+            val currentLabel = context.applicationInfo.loadLabel(context.packageManager).toString()
+            currentLabel != originalName
+        } catch (e: Exception) { false }
     }
 
     fun isAppIconModified(): Boolean = !isSignatureValid()
