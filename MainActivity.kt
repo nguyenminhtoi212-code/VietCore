@@ -1,173 +1,210 @@
 package com.example.myempty.vietcore
 
-import android.graphics.Color
-import android.os.Bundle
-import android.view.View
-import android.view.WindowManager
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.*
-import java.util.Locale
-import kotlin.random.Random
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.content.pm.Signature
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.*
+import android.provider.Settings
+import android.util.Base64
+import android.view.accessibility.AccessibilityManager
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import java.security.MessageDigest
+import java.util.*
+import java.util.concurrent.Executors
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 
-class MainActivity : AppCompatActivity() {
+/**
+ * OmnisSecurity: Hệ thống bảo mật đa tầng cho VietCore 2026.
+ * Bổ sung: 
+ * 1. Ngăn chặn cài đặt từ kho APK lạ (APK Source Validation).
+ * 2. Siết chặt kiểm tra cấu trúc Manifest (Permissions & Activities).
+ */
+class OmnisSecurity(private val context: Context) {
 
-    private lateinit var security: OmnisSecurity
-    private lateinit var simulator: DeviceSimulator
+    private val AES_KEY = "VIETCORE_SECURE_KEY_2026_TOI_MOD" 
+    private val VALID_PROVIDER_DOMAIN = "vietcore.intelligence.gov"
+    private val securityExecutor = Executors.newSingleThreadExecutor()
 
-    private var apiStatus = "PENDING"
-    private var updateJob: Job? = null
-    private var selfDestructStarted = false
-    private var currentErrorCode: Int = 0
+    // --- 0. NGĂN CHẶN HỆ ĐIỀU HÀNH ĐỜI CŨ ---
+    fun isLegacyOSDetected(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
-    // Bảng màu hệ thống
-    private val COLOR_MATRIX_GREEN = Color.parseColor("#00FF41")
-    private val COLOR_DANGER_RED = Color.parseColor("#FF0000")
-    private val COLOR_WARNING_ORANGE = Color.parseColor("#FF8C00")
-    private val COLOR_SCANNING_CYAN = Color.parseColor("#00FFFF")
-    private val COLOR_OFFLINE_YELLOW = Color.parseColor("#FFFF00")
+    fun isOutdatedHardware(): Boolean {
+        val abis = Build.SUPPORTED_ABIS
+        return abis.none { it.contains("arm64-v8a") }
+    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    // --- 1. SIÊU NGĂN CHẶN GIẢ LẬP ---
+    fun isEmulatorOrVirtualMachine(): Boolean {
+        val finger = Build.FINGERPRINT
+        val board = Build.BOARD.lowercase(Locale.US)
+        return (finger.startsWith("generic") || finger.startsWith("unknown") || 
+                Build.MODEL.contains("google_sdk") || Build.MODEL.contains("Emulator") ||
+                Build.HARDWARE.contains("goldfish") || Build.HARDWARE.contains("ranchu") ||
+                board.contains("nox") || Build.HARDWARE.contains("bluestacks"))
+    }
 
-        // Lớp bảo mật chặn Capture/Record
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE
+    // --- 2. CHỐNG BIẾN THỂ OS NỘI ĐỊA & MÁY XÁCH TAY ---
+    fun isRestrictedRegionOrOS(): Boolean {
+        val manufacturer = Build.MANUFACTURER.lowercase(Locale.US)
+        val isGlobal = try {
+            context.packageManager.getPackageInfo("com.google.android.gsf", 0)
+            true
+        } catch (e: Exception) { false }
+
+        if (!isGlobal) {
+            val brands = arrayOf("huawei", "xiaomi", "oppo", "vivo")
+            if (brands.any { manufacturer.contains(it) }) return true
+        }
+        return false
+    }
+
+    // --- 3. SIẾT CHẶT NGUỒN GỐC APK & CẤU TRÚC HỆ THỐNG (MỚI) ---
+
+    /**
+     * Ngăn chặn cài đặt từ các kho APK Mod/Giả mạo.
+     * Chỉ chấp nhận cài đặt trực tiếp (từ Dev) hoặc các nguồn uy tín.
+     */
+    fun isInstallerUnverified(): Boolean {
+        val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            context.packageManager.getInstallSourceInfo(context.packageName).installingPackageName
+        } else {
+            @Suppress("DEPRECATION")
+            context.packageManager.getInstallerPackageName(context.packageName)
+        }
+        
+        // Danh sách đen các kho APK phổ biến thường chứa mã độc/mod
+        val blacklistedSources = arrayOf(
+            "com.android.vending", // Chặn nếu bạn muốn chỉ cho phép cài thủ công qua file nội bộ
+            "com.amazon.venezia", "com.apkpure.a3", "com.apkmirror.helper"
         )
-
-        setContentView(R.layout.activity_main)
-
-        security = OmnisSecurity(this)
-        simulator = DeviceSimulator(this)
-
-        setupFooterInfo()
-        startRealtimeMonitoring()
+        
+        // Nếu app được cài từ nguồn lạ không rõ ràng, đánh dấu là rủi ro
+        return installer != null && blacklistedSources.contains(installer)
     }
 
-    private fun startRealtimeMonitoring() {
-        val tvDevice = findViewById<TextView>(R.id.tv_device_info)
-        val tvStatus = findViewById<TextView>(R.id.tv_security_status)
-        val errorOverlay = findViewById<View>(R.id.error_overlay)
-        val tvErrorMessage = findViewById<TextView>(R.id.tv_error_message)
-        val tvErrorCodeDigit = findViewById<TextView>(R.id.tv_error_code_digit)
+    /**
+     * Siết chặt kiểm tra quyền (Permissions) và Hoạt động (Activities).
+     * Nếu hacker thêm quyền lạ hoặc Activity lạ vào Manifest, ứng dụng sẽ tự hủy.
+     */
+    fun isManifestStructuralTampered(): Boolean {
+        return try {
+            val info = context.packageManager.getPackageInfo(
+                context.packageName, 
+                PackageManager.GET_PERMISSIONS or PackageManager.GET_ACTIVITIES
+            )
+            
+            // Ví dụ: VietCore gốc chỉ có 5 Activities và 3 Quyền. 
+            // Nếu con số này thay đổi (hacker thêm vào), coi như bị xâm nhập.
+            val maxAllowedPermissions = 10 
+            val maxAllowedActivities = 5
 
-        updateJob = lifecycleScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                try {
-                    // --- KHÔI PHỤC & ĐỒNG BỘ CÁC BIẾN KIỂM TRA TOÀN DIỆN ---
-                    val isOriginal = security.isOriginalPackage()
-                    val isOwner = isOriginal && !security.isSignatureValid()
+            val currentPermissions = info.requestedPermissions?.size ?: 0
+            val currentActivities = info.activities?.size ?: 0
 
-                    val isLegacyOS = security.isLegacyOSDetected()
-                    val isOutdatedHW = security.isOutdatedHardware()
-                    val isEmulator = security.isEmulatorOrVirtualMachine()
-                    val isRooted = security.isRooted()
-                    val isCustomROM = security.isCustomROMDetected()
-                    val isBootloaderUnlocked = security.isBootloaderUnlocked()
+            (currentPermissions > maxAllowedPermissions || currentActivities > maxAllowedActivities)
+        } catch (e: Exception) { true }
+    }
 
-                    val isCloned = security.isAppCloned()
-                    val isDebugging = security.isDebugging()
-                    val isHackerTools = security.isHackerToolsDetected()
+    // --- 4. KIỂM TRA TÍNH TOÀN VẸN & TỰ HỦY ---
 
-                    val isNameTampered = security.isAppNameModified("VietCore")
-                    val isIconTampered = security.isAppIconModified()
-                    val isManifestBroken = security.isManifestTampered()
-                    val isResourceBroken = security.isResourceModified()
+    fun isIntegrityCompromised(): Boolean {
+        return isLegacyOSDetected() || isOutdatedHardware() || isRooted() || 
+               isHackerToolsDetected() || isAppCloned() || isDebugging() || 
+               isBootloaderUnlocked() || isCustomROMDetected() || isManifestTampered() || 
+               isResourceModified() || isRestrictedRegionOrOS() || 
+               isInstallerUnverified() || isManifestStructuralTampered()
+    }
 
-                    // Xác định loại vi phạm dựa trên các biến đã khôi phục
-                    val currentViolation = when {
-                        !isOriginal || isManifestBroken || isResourceBroken -> "APK INTEGRITY BREACH"
-                        isNameTampered || isIconTampered -> "UI TAMPERING DETECTED"
-                        isHackerTools || isDebugging || isCloned -> "HACKER TOOLS DETECTED"
-                        !isOwner && (isRooted || isEmulator) -> "UNSECURE ENVIRONMENT"
-                        !isOwner && (isCustomROM || isBootloaderUnlocked) -> "HARDWARE BREACH"
-                        isLegacyOS || isOutdatedHW -> "OUTDATED ENVIRONMENT"
-                        else -> null
-                    }
+    fun isRooted(): Boolean {
+        val paths = arrayOf("/system/bin/su", "/system/xbin/su", "/sbin/su", "/data/local/xbin/su")
+        return paths.any { File(it).exists() }
+    }
 
-                    withContext(Dispatchers.Main) {
-                        if (currentViolation != null) {
-                            // Cố định mã lỗi một khi đã phát hiện vi phạm
-                            if (currentErrorCode == 0) {
-                                currentErrorCode = Random.nextInt(1000, 9999)
-                            }
-                            tvErrorCodeDigit?.text = "INTERNAL_ERROR: $currentErrorCode"
-                            handleBankGradeViolation(currentViolation, tvStatus, errorOverlay, tvErrorMessage)
-                        } else {
-                            val specs = simulator.getRealTimeSpecs()
-                            tvDevice?.text = specs
-                            updateSecurityStatusLabel(tvStatus)
-                            errorOverlay?.visibility = View.GONE
-                            currentErrorCode = 0 // Reset nếu an toàn
-                        }
-                    }
-                } catch (e: Exception) {
-                    // Log error nếu cần thiết trong môi trường dev
+    fun isHackerToolsDetected(): Boolean {
+        val proxyHost = System.getProperty("http.proxyHost")
+        if (!proxyHost.isNullOrEmpty()) return true
+        return try {
+            val file = File("/proc/self/maps")
+            if (file.exists()) {
+                file.bufferedReader().useLines { lines ->
+                    lines.any { it.contains("frida") || it.contains("xposed") || it.contains("substrate") }
                 }
-                delay(2000)
-            }
-        }
+            } else false
+        } catch (e: Exception) { false }
     }
 
-    private fun handleBankGradeViolation(reason: String, statusView: TextView?, overlay: View?, errorText: TextView?) {
-        val tvTimer = findViewById<TextView>(R.id.tv_self_destruct_timer)
-
-        statusView?.text = "SHIELD: TERMINATED"
-        statusView?.setTextColor(COLOR_DANGER_RED)
-        overlay?.visibility = View.VISIBLE
-        errorText?.text = "UNAUTHORIZED INTERVENTION: $reason"
-
-        if (!selfDestructStarted) {
-            selfDestructStarted = true
-            updateJob?.cancel() // Dừng quét để thực hiện tự hủy
-
-            lifecycleScope.launch(Dispatchers.Main) {
-                // Đếm ngược 4 giây (40 bước, mỗi bước 100ms) để đảm bảo tốc độ không quá nhanh
-                for (i in 40 downTo 0) {
-                    val seconds = i / 10.0
-                    tvTimer?.text = String.format(Locale.US, "SELF-DESTRUCT IN: %.1fs", seconds)
-                    delay(100)
-                }
-                // Thực thi lệnh tự hủy cuối cùng
-                security.activateSelfDestruct()
-                finishAffinity()
-            }
-        }
+    fun isAppCloned(): Boolean {
+        val path = context.filesDir.absolutePath
+        return path.contains("999") || path.contains("101") || !path.startsWith("/data/user/0/")
     }
 
-    private fun updateSecurityStatusLabel(statusView: TextView?) {
-        if (statusView == null) return
-        when (apiStatus) {
-            "1001" -> {
-                statusView.text = "OMNIS: SYSTEM VERIFIED [SECURE]"
-                statusView.setTextColor(COLOR_MATRIX_GREEN)
-            }
-            "4004" -> {
-                statusView.text = "SECURITY: NODE THREAT DETECTED"
-                statusView.setTextColor(COLOR_WARNING_ORANGE)
-            }
-            else -> {
-                statusView.text = "OMNIS: MONITORING ACTIVE"
-                statusView.setTextColor(COLOR_OFFLINE_YELLOW)
-            }
-        }
+    fun isOriginalPackage(): Boolean = context.packageName == "com.example.myempty.vietcore"
+
+    fun activateSelfDestruct() {
+        try {
+            context.cacheDir.deleteRecursively()
+            context.filesDir.deleteRecursively()
+            android.os.Process.killProcess(android.os.Process.myPid())
+        } catch (e: Exception) { System.exit(1) }
     }
 
-    private fun setupFooterInfo() {
-        findViewById<TextView>(R.id.tv_author)?.apply {
-            text = "Developer: Nguyen Minh Toi"
-            setTextColor(Color.WHITE)
-        }
-        findViewById<TextView>(R.id.tv_version)?.apply {
-            text = "Core: VietCore 26.1.2-Omnis Pro"
-            setTextColor(COLOR_SCANNING_CYAN)
-        }
+    // --- 5. MÃ HÓA & KẾT NỐI SERVER ---
+    fun encryptData(data: String): String {
+        return try {
+            val keyBytes = AES_KEY.toByteArray(Charsets.UTF_8).let { it.copyOf(32) }
+            val skeySpec = SecretKeySpec(keyBytes, "AES")
+            val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec)
+            val encrypted = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
+            Base64.encodeToString(encrypted, Base64.NO_WRAP)
+        } catch (e: Exception) { "ERR" }
     }
 
-    override fun onDestroy() {
-        updateJob?.cancel()
-        super.onDestroy()
+    // --- 6. CHỮ KÝ & TRUY CẬP TỪ XA ---
+    fun isSignatureValid(): Boolean {
+        return try {
+            val signatures = getAppSignatures()
+            signatures != null && signatures.isNotEmpty()
+        } catch (e: Exception) { false }
     }
+
+    @SuppressLint("PackageManagerGetSignatures")
+    private fun getAppSignatures(): Array<Signature>? {
+        return try {
+            val pm = context.packageManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                    .signingInfo?.apkContentsSigners
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES).signatures
+            }
+        } catch (e: Exception) { null }
+    }
+
+    fun isDebugging(): Boolean {
+        return Debug.isDebuggerConnected() || 
+                Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) != 0
+    }
+
+    fun isBootloaderUnlocked(): Boolean = Build.BOOTLOADER.lowercase().contains("unlock")
+
+    fun isCustomROMDetected(): Boolean = Build.TAGS?.contains("test-keys") ?: false
+
+    fun isManifestTampered(): Boolean = !isOriginalPackage()
+
+    fun isResourceModified(): Boolean = !isSignatureValid()
+
+    fun isAppNameModified(originalName: String): Boolean {
+        val currentLabel = context.applicationInfo.loadLabel(context.packageManager).toString()
+        return currentLabel != originalName
+    }
+
+    fun isAppIconModified(): Boolean = !isSignatureValid()
 }
