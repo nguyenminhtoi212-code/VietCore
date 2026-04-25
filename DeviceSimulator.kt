@@ -2,8 +2,8 @@ package com.example.myempty.vietcore
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.content.pm.Signature
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
@@ -20,6 +20,10 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * DeviceSimulator: Hệ thống mô phỏng và thu thập thông số thiết bị thời gian thực.
+ * Được thiết kế để cung cấp dữ liệu cho báo cáo bảo mật của VietCore.
+ */
 class DeviceSimulator(private val context: Context) {
 
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -41,6 +45,9 @@ class DeviceSimulator(private val context: Context) {
         "SECURE_GATEWAY"
     }
 
+    /**
+     * Khôi phục nhận diện Quốc gia cho SIM & eSIM
+     */
     private fun getSimDetailedStatus(): String {
         return try {
             val sm = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
@@ -52,9 +59,12 @@ class DeviceSimulator(private val context: Context) {
                 val sb = StringBuilder()
                 activeSubscriptions.forEachIndexed { index, info ->
                     val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && info.isEmbedded) "eSIM" else "Physical SIM"
+                    
+                    // Nhận diện quốc gia qua mã ISO của SIM
                     val countryIso = info.countryIso.uppercase()
                     val locale = Locale.Builder().setRegion(countryIso).build()
                     val countryName = if (countryIso.isNotEmpty()) locale.getDisplayCountry(Locale.US) else "Global"
+                    
                     sb.append("Slot ${index + 1}: ${info.displayName} ($type) - $countryName\n")
                 }
                 sb.toString().trim()
@@ -62,12 +72,16 @@ class DeviceSimulator(private val context: Context) {
         } catch (e: Exception) { "SIM: Access Denied" }
     }
 
+    /**
+     * Khôi phục nhận diện Quốc gia cho WiFi & Modem
+     */
     private fun getNetworkMetrics(): String {
         return try {
             val network = connectivityManager.activeNetwork
             val caps = connectivityManager.getNetworkCapabilities(network) ?: return "OFFLINE"
             val speedMbps = caps.linkDownstreamBandwidthKbps / 1000.0
             val speedDisplay = String.format("%.1f Mbps", speedMbps)
+            
             val systemCountry = context.resources.configuration.locales[0].displayCountry
             
             if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
@@ -149,18 +163,10 @@ class DeviceSimulator(private val context: Context) {
         """.trimIndent()
     }
 
-    /**
-     * Fix lỗi Deprecated TYPE_TEMPERATURE
-     * Đọc trực tiếp từ Battery Stats để tránh bị nhận diện nhầm là virus Script/Wacatac
-     */
     private fun getTemperature(): String {
-        return try {
-            val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            val temp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
-            if (temp > 0) "${temp / 10.0}°C" else "36.5°C"
-        } catch (e: Exception) {
-            "Internal Sensor"
-        }
+        val intent = context.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
+        val temp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+        return "${temp / 10.0}°C"
     }
 
     private fun getStorageStatus(): String {
