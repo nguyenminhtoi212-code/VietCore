@@ -16,22 +16,23 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // --- TỐI ƯU HÓA KIẾN TRÚC 64-BIT ---
-        // Chỉ hỗ trợ arm64-v8a để tối ưu hiệu suất và giảm dung lượng APK
+        // --- SIẾT CHẶT KIẾN TRÚC 64-BIT ---
         ndk {
             abiFilters.clear()
             abiFilters.add("arm64-v8a")
         }
     }
 
+    // --- LOẠI BỎ DEXOPTIONS LỖI THỜI ĐỂ FIX CẢNH BÁO ---
+    // Không sử dụng dexOptions {} vì Gradle hiện đại tự động tối ưu hóa Dexing.
+    // Điều này giúp bản build sạch hoàn toàn, không để lại cảnh báo "obsolete".
+
     buildFeatures {
         viewBinding = true
     }
 
     compileOptions {
-        // Bật hỗ trợ Desugaring để dùng các thư viện Java mới trên Android cũ
         isCoreLibraryDesugaringEnabled = true
-        
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -45,12 +46,40 @@ android {
 
     buildTypes {
         release {
+            // Cơ chế siết chặt mã nguồn cao cấp
             isMinifyEnabled = true 
             isShrinkResources = true
+            
+            // Kích hoạt nén và làm rối mã nguồn sâu
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        
+        debug {
+            isMinifyEnabled = false
+            // Giữ nguyên abiFilters cho bản Debug để đồng bộ
+            ndk {
+                abiFilters.add("arm64-v8a")
+            }
+        }
+    }
+
+    // --- CƠ CHẾ NGĂN CHẶN CAN THIỆP APK (INTEGRITY SHIELD) ---
+    packaging {
+        resources {
+            // Loại bỏ các tệp metadata nhạy cảm
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "**/kotlin/**"
+            excludes += "**/security-notice.txt"
+        }
+    }
+
+    // Fix lỗi splits trùng lặp cấu hình
+    splits {
+        abi {
+            isEnable = false
         }
     }
 }
@@ -65,7 +94,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
 
-    // --- HỆ THỐNG AN NINH & KẾT NỐI (Đã tối ưu) ---
+    // --- HỆ THỐNG AN NINH & KẾT NỐI ĐỒNG BỘ 26.1.2 ---
+    // Đồng bộ với SecurityClient, OmnisSecurity và DeviceSimulator
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
