@@ -6,6 +6,7 @@
      android:layout_height="match_parent"
      android:layout_width="match_parent"
      android:background="#000000"
+     android:fitsSystemWindows="false"
      tools:context=".MainActivity">
 
     <TextView
@@ -16,9 +17,9 @@
          app:layout_constraintStart_toStartOf="parent"
          android:textSize="12sp"
          android:fontFamily="monospace"
-         android:textColor="#00FF00"
+         android:textColor="#00FF41"
          android:id="@+id/tv_security_status"
-         android:text="OMNIS SECURITY: ACTIVE"
+         android:text="OMNIS SECURITY: MONITORING ACTIVE"
          android:textStyle="bold" />
 
     <ScrollView
@@ -26,6 +27,7 @@
          android:layout_width="match_parent"
          android:layout_marginBottom="10dp"
          android:layout_marginTop="10dp"
+         android:scrollbars="none"
          app:layout_constraintBottom_toTopOf="@+id/ll_footer"
          app:layout_constraintTop_toBottomOf="@id/tv_security_status">
 
@@ -51,7 +53,7 @@
     <LinearLayout
          android:layout_height="wrap_content"
          android:layout_width="match_parent"
-         android:background="#1A1A1A"
+         android:background="#0D0D0D"
          android:gravity="center"
          android:padding="12dp"
          android:orientation="vertical"
@@ -72,10 +74,10 @@
              android:layout_width="wrap_content"
              android:fontFamily="monospace"
              android:textSize="10sp"
-             android:textColor="#444444"
+             android:textColor="#00FFFF"
              android:layout_marginTop="2dp"
              android:id="@+id/tv_version"
-             android:text="Version: VietCore 26.1.0-Omnis Pro" />
+             android:text="Core: VietCore 26.1.2-Omnis Pro" />
 
     </LinearLayout>
 
@@ -86,7 +88,7 @@
          android:background="#000000"
          android:gravity="center"
          android:clickable="true"
-         android:elevation="15dp"
+         android:elevation="20dp"
          android:padding="24dp"
          android:orientation="vertical"
          android:focusable="true"
