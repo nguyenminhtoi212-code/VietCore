@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var security: OmnisSecurity
     private lateinit var simulator: DeviceSimulator
+    private lateinit var networkClient: SecurityClient
 
     private var apiStatus = "PENDING"
     private var updateJob: Job? = null
@@ -31,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Lớp bảo mật chặn Capture/Record (FLAG_SECURE)
+        // Lớp bảo mật chặn Capture/Record
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
@@ -39,11 +40,33 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
+        // Khởi tạo bộ ba đồng bộ
         security = OmnisSecurity(this)
         simulator = DeviceSimulator(this)
+        networkClient = SecurityClient.getInstance()
 
         setupFooterInfo()
-        startRealtimeMonitoring()
+        performInitialSecurityCheck()
+    }
+
+    /**
+     * BỔ SUNG: Kiểm tra tính toàn vẹn qua SecurityClient trước khi giám sát
+     */
+    private fun performInitialSecurityCheck() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            val payload = security.encryptData("LAUNCH_INIT_${System.currentTimeMillis()}")
+            val response = networkClient.verifyLaunchIntegrity(payload)
+            
+            if (response.contains("GENUINE") || response == "GENUINE_EMPTY") {
+                apiStatus = "1001"
+                startRealtimeMonitoring()
+            } else if (response.contains("CONNECTION_COMPROMISED")) {
+                apiStatus = "OFFLINE"
+                startRealtimeMonitoring() // Cho phép chạy offline nhưng cảnh báo
+            } else {
+                handleBankGradeViolation("SERVER_INTEGRITY_REJECTION", null, findViewById(R.id.error_overlay), null)
+            }
+        }
     }
 
     private fun startRealtimeMonitoring() {
@@ -56,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         updateJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    // --- KHÔI PHỤC & ĐỒNG BỘ CÁC BIẾN KIỂM TRA TOÀN DIỆN ---
+                    // --- ĐỒNG BỘ KIỂM TRA TỪ OMNISSECURITY ---
                     val isOriginal = security.isOriginalPackage()
                     val isOwner = isOriginal && !security.isSignatureValid()
 
@@ -76,11 +99,9 @@ class MainActivity : AppCompatActivity() {
                     val isManifestBroken = security.isManifestTampered()
                     val isResourceBroken = security.isResourceModified()
 
-                    // --- BỔ SUNG KIỂM TRA SIẾT CHẶT (NGUỒN APK & CẤU TRÚC) ---
                     val isUnverifiedSource = security.isInstallerUnverified()
                     val isStructureModified = security.isManifestStructuralTampered()
 
-                    // Xác định loại vi phạm dựa trên các biến đã khôi phục và bổ sung
                     val currentViolation = when {
                         !isOriginal || isManifestBroken || isResourceBroken || isStructureModified -> "APK INTEGRITY BREACH"
                         isUnverifiedSource -> "UNTRUSTED INSTALLATION SOURCE"
@@ -94,22 +115,25 @@ class MainActivity : AppCompatActivity() {
 
                     withContext(Dispatchers.Main) {
                         if (currentViolation != null) {
-                            // Cố định mã lỗi một khi đã phát hiện vi phạm
                             if (currentErrorCode == 0) {
                                 currentErrorCode = Random.nextInt(1000, 9999)
                             }
                             tvErrorCodeDigit?.text = "INTERNAL_ERROR: $currentErrorCode"
                             handleBankGradeViolation(currentViolation, tvStatus, errorOverlay, tvErrorMessage)
                         } else {
+                            // --- ĐỒNG BỘ DỮ LIỆU TỪ DEVICESIMULATOR ---
                             val specs = simulator.getRealTimeSpecs()
                             tvDevice?.text = specs
                             updateSecurityStatusLabel(tvStatus)
                             errorOverlay?.visibility = View.GONE
-                            currentErrorCode = 0 // Reset nếu an toàn
+                            currentErrorCode = 0 
+                            
+                            // Gửi báo cáo định kỳ qua SecurityClient
+                            networkClient.sendSecureReport(security.encryptData(specs))
                         }
                     }
                 } catch (e: Exception) {
-                    // Im lặng tuyệt đối trước lỗi để đảm bảo không để lại dấu vết
+                    // Im lặng tuyệt đối
                 }
                 delay(2000)
             }
@@ -126,17 +150,15 @@ class MainActivity : AppCompatActivity() {
 
         if (!selfDestructStarted) {
             selfDestructStarted = true
-            updateJob?.cancel() // Dừng quét ngay lập tức để tập trung tự hủy
+            updateJob?.cancel()
 
             lifecycleScope.launch(Dispatchers.Main) {
-                // Đếm ngược 4.0 giây mượt mà (40 bước x 100ms)
                 for (i in 40 downTo 0) {
                     val seconds = i / 10.0
                     tvTimer?.text = String.format(Locale.US, "SELF-DESTRUCT IN: %.1fs", seconds)
                     delay(100)
                 }
-                // Kích hoạt xóa sạch cache/files và kết thúc toàn bộ tiến trình
-                security.activateSelfDestruct()
+                security.activateSelfDestruct() // Xóa sạch dấu vết
                 finishAffinity()
             }
         }
@@ -152,6 +174,10 @@ class MainActivity : AppCompatActivity() {
             "4004" -> {
                 statusView.text = "SECURITY: NODE THREAT DETECTED"
                 statusView.setTextColor(COLOR_WARNING_ORANGE)
+            }
+            "OFFLINE" -> {
+                statusView.text = "OMNIS: OFFLINE MODE ACTIVE"
+                statusView.setTextColor(COLOR_OFFLINE_YELLOW)
             }
             else -> {
                 statusView.text = "OMNIS: MONITORING ACTIVE"
