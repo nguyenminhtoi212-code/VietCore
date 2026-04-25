@@ -12,11 +12,13 @@ import java.util.concurrent.TimeUnit
 /**
  * SecurityClient: Quản lý giao thức mạng bảo mật cho VietCore.
  * Thiết kế Singleton để tránh xung đột tài nguyên trên các thiết bị.
+ * Cơ chế: SSL Pinning, Anti-MITM, và Time-out siết chặt.
  */
 class SecurityClient private constructor() {
 
     companion object {
         // 1. Cấu hình SSL Pinning chống tấn công giả mạo (MITM)
+        // Lưu ý: Thay thế các mã hash bằng chứng chỉ thực tế khi triển khai server
         private val certificatePinner = CertificatePinner.Builder()
             .add("api.yourserver.com", "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
             .add("vietcore.intelligence.gov", "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
