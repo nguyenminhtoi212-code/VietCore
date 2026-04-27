@@ -11,6 +11,10 @@ import kotlinx.coroutines.*
 import java.util.Locale
 import kotlin.random.Random
 
+/**
+ * MainActivity: Trung tâm điều phối bảo mật VietCore 2026.
+ * Cơ chế: Giữ nguyên chế độ tự hủy và tích hợp lá chắn chống nghe lén/ghi âm.
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var security: OmnisSecurity
@@ -22,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     private var selfDestructStarted = false
     private var currentErrorCode: Int = 0
 
-    // Bảng màu hệ thống
+    // Bảng màu hệ thống cố định
     private val COLOR_MATRIX_GREEN = Color.parseColor("#00FF41")
     private val COLOR_DANGER_RED = Color.parseColor("#FF0000")
     private val COLOR_WARNING_ORANGE = Color.parseColor("#FF8C00")
@@ -32,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Lớp bảo mật chặn Capture/Record
+        // Lớp bảo mật chặn Capture/Record màn hình (Cố định)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
@@ -45,12 +49,15 @@ class MainActivity : AppCompatActivity() {
         simulator = DeviceSimulator(this)
         networkClient = SecurityClient.getInstance()
 
+        // Kích hoạt quét đe dọa lân cận và lá chắn chống nghe lén ngầm
+        security.startRealTimeIntelligence()
+
         setupFooterInfo()
         performInitialSecurityCheck()
     }
 
     /**
-     * BỔ SUNG: Kiểm tra tính toàn vẹn qua SecurityClient trước khi giám sát
+     * Kiểm tra tính toàn vẹn qua SecurityClient trước khi khởi động giám sát
      */
     private fun performInitialSecurityCheck() {
         lifecycleScope.launch(Dispatchers.Main) {
@@ -62,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                 startRealtimeMonitoring()
             } else if (response.contains("CONNECTION_COMPROMISED")) {
                 apiStatus = "OFFLINE"
-                startRealtimeMonitoring() // Cho phép chạy offline nhưng cảnh báo
+                startRealtimeMonitoring() 
             } else {
                 handleBankGradeViolation("SERVER_INTEGRITY_REJECTION", null, findViewById(R.id.error_overlay), null)
             }
@@ -89,24 +96,27 @@ class MainActivity : AppCompatActivity() {
                     val isRooted = security.isRooted()
                     val isCustomROM = security.isCustomROMDetected()
                     val isBootloaderUnlocked = security.isBootloaderUnlocked()
-
+                    
                     val isCloned = security.isAppCloned()
                     val isDebugging = security.isDebugging()
                     val isHackerTools = security.isHackerToolsDetected()
+                    
+                    // Mới: Kiểm tra đe dọa lân cận, Wifi Debug và CHỐNG NGHE LÉN
+                    val isNearbyThreat = security.isNearbyInterferenceDetected()
+                    val isWifiDebug = security.isWifiDebuggingEnabled()
+                    val isEavesdropping = security.isMicrophoneInUse() // Phát hiện ghi âm trái phép
 
                     val isNameTampered = security.isAppNameModified("VietCore")
-                    val isIconTampered = security.isAppIconModified()
                     val isManifestBroken = security.isManifestTampered()
                     val isResourceBroken = security.isResourceModified()
-
-                    val isUnverifiedSource = security.isInstallerUnverified()
                     val isStructureModified = security.isManifestStructuralTampered()
 
                     val currentViolation = when {
                         !isOriginal || isManifestBroken || isResourceBroken || isStructureModified -> "APK INTEGRITY BREACH"
-                        isUnverifiedSource -> "UNTRUSTED INSTALLATION SOURCE"
-                        isNameTampered || isIconTampered -> "UI TAMPERING DETECTED"
                         isHackerTools || isDebugging || isCloned -> "HACKER TOOLS DETECTED"
+                        isNearbyThreat -> "PROXIMITY THREAT DETECTED"
+                        isWifiDebug -> "WIRELESS DEBUGGING ACTIVE"
+                        isEavesdropping -> "AUDIO SURVEILLANCE DETECTED" // Kích hoạt khi có nghe lén
                         !isOwner && (isRooted || isEmulator) -> "UNSECURE ENVIRONMENT"
                         !isOwner && (isCustomROM || isBootloaderUnlocked) -> "HARDWARE BREACH"
                         isLegacyOS || isOutdatedHW -> "OUTDATED ENVIRONMENT"
@@ -128,18 +138,21 @@ class MainActivity : AppCompatActivity() {
                             errorOverlay?.visibility = View.GONE
                             currentErrorCode = 0 
                             
-                            // Gửi báo cáo định kỳ qua SecurityClient
+                            // Gửi báo cáo định kỳ
                             networkClient.sendSecureReport(security.encryptData(specs))
                         }
                     }
                 } catch (e: Exception) {
-                    // Im lặng tuyệt đối
+                    // Bảo mật tuyệt đối
                 }
                 delay(2000)
             }
         }
     }
 
+    /**
+     * CHẾ ĐỘ TỰ HỦY CỐ ĐỊNH (4.0 GIÂY)
+     */
     private fun handleBankGradeViolation(reason: String, statusView: TextView?, overlay: View?, errorText: TextView?) {
         val tvTimer = findViewById<TextView>(R.id.tv_self_destruct_timer)
 
@@ -153,6 +166,7 @@ class MainActivity : AppCompatActivity() {
             updateJob?.cancel()
 
             lifecycleScope.launch(Dispatchers.Main) {
+                // Đếm ngược chính xác từ 4.0s về 0s
                 for (i in 40 downTo 0) {
                     val seconds = i / 10.0
                     tvTimer?.text = String.format(Locale.US, "SELF-DESTRUCT IN: %.1fs", seconds)
@@ -170,10 +184,6 @@ class MainActivity : AppCompatActivity() {
             "1001" -> {
                 statusView.text = "OMNIS: SYSTEM VERIFIED [SECURE]"
                 statusView.setTextColor(COLOR_MATRIX_GREEN)
-            }
-            "4004" -> {
-                statusView.text = "SECURITY: NODE THREAT DETECTED"
-                statusView.setTextColor(COLOR_WARNING_ORANGE)
             }
             "OFFLINE" -> {
                 statusView.text = "OMNIS: OFFLINE MODE ACTIVE"
