@@ -13,7 +13,7 @@ import kotlin.random.Random
 
 /**
  * MainActivity: Trung tâm điều phối bảo mật VietCore 2026.
- * Cơ chế: Giữ nguyên chế độ tự hủy và tích hợp lá chắn chống nghe lén/ghi âm.
+ * Đồng bộ: Chống điều khiển từ xa, Giám sát Trợ năng và Toàn vẹn DEX.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -26,17 +26,18 @@ class MainActivity : AppCompatActivity() {
     private var selfDestructStarted = false
     private var currentErrorCode: Int = 0
 
-    // Bảng màu hệ thống cố định
+    // Bảng màu hệ thống
     private val COLOR_MATRIX_GREEN = Color.parseColor("#00FF41")
     private val COLOR_DANGER_RED = Color.parseColor("#FF0000")
-    private val COLOR_WARNING_ORANGE = Color.parseColor("#FF8C00")
     private val COLOR_SCANNING_CYAN = Color.parseColor("#00FFFF")
     private val COLOR_OFFLINE_YELLOW = Color.parseColor("#FFFF00")
+
+    private val AUTHORIZED_PACKAGE = "com.example.myempty.vietcore"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Lớp bảo mật chặn Capture/Record màn hình (Cố định)
+        // Ngăn chặn chụp ảnh và quay màn hình
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
@@ -44,21 +45,15 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        // Khởi tạo bộ ba đồng bộ
         security = OmnisSecurity(this)
         simulator = DeviceSimulator(this)
         networkClient = SecurityClient.getInstance()
-
-        // Kích hoạt quét đe dọa lân cận và lá chắn chống nghe lén ngầm
         security.startRealTimeIntelligence()
 
         setupFooterInfo()
         performInitialSecurityCheck()
     }
 
-    /**
-     * Kiểm tra tính toàn vẹn qua SecurityClient trước khi khởi động giám sát
-     */
     private fun performInitialSecurityCheck() {
         lifecycleScope.launch(Dispatchers.Main) {
             val payload = security.encryptData("LAUNCH_INIT_${System.currentTimeMillis()}")
@@ -86,13 +81,14 @@ class MainActivity : AppCompatActivity() {
         updateJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    // --- ĐỒNG BỘ KIỂM TRA TỪ OMNISSECURITY ---
+                    val currentPkg = packageName
+                    val isWrongIdentity = currentPkg != AUTHORIZED_PACKAGE
+                    
                     val isOriginal = security.isOriginalPackage()
-                    val isOwner = isOriginal && !security.isSignatureValid()
+                    val isOwner = isOriginal && security.isSignatureValid()
 
-                    val isLegacyOS = security.isLegacyOSDetected()
-                    val isOutdatedHW = security.isOutdatedHardware()
-                    val isEmulator = security.isEmulatorOrVirtualMachine()
+                    // Các chỉ số bảo mật từ OmnisSecurity
+                    val isEmulator = security.isEmulatorOrVirtualMachine() 
                     val isRooted = security.isRooted()
                     val isCustomROM = security.isCustomROMDetected()
                     val isBootloaderUnlocked = security.isBootloaderUnlocked()
@@ -100,26 +96,27 @@ class MainActivity : AppCompatActivity() {
                     val isCloned = security.isAppCloned()
                     val isDebugging = security.isDebugging()
                     val isHackerTools = security.isHackerToolsDetected()
-                    
-                    // Mới: Kiểm tra đe dọa lân cận, Wifi Debug và CHỐNG NGHE LÉN
-                    val isNearbyThreat = security.isNearbyInterferenceDetected()
                     val isWifiDebug = security.isWifiDebuggingEnabled()
-                    val isEavesdropping = security.isMicrophoneInUse() // Phát hiện ghi âm trái phép
-
-                    val isNameTampered = security.isAppNameModified("VietCore")
+                    
+                    val isDexModified = security.isClassesDexTampered() 
                     val isManifestBroken = security.isManifestTampered()
                     val isResourceBroken = security.isResourceModified()
                     val isStructureModified = security.isManifestStructuralTampered()
 
+                    // Chỉ số mới: Điều khiển từ xa & Nghe lén
+                    val isRemoteControl = security.isRemoteControlActive()
+                    val isEavesdropping = security.isMicrophoneInUse()
+
                     val currentViolation = when {
-                        !isOriginal || isManifestBroken || isResourceBroken || isStructureModified -> "APK INTEGRITY BREACH"
+                        isWrongIdentity || isManifestBroken || isStructureModified -> "APK IDENTITY BREACH"
+                        isDexModified -> "CORE LOGIC TAMPERED (DEX)"
+                        isResourceBroken -> "RESOURCE INTEGRITY BREACH"
+                        isRemoteControl -> "REMOTE CONTROL / ACCESSIBILITY EXPLOIT"
                         isHackerTools || isDebugging || isCloned -> "HACKER TOOLS DETECTED"
-                        isNearbyThreat -> "PROXIMITY THREAT DETECTED"
                         isWifiDebug -> "WIRELESS DEBUGGING ACTIVE"
-                        isEavesdropping -> "AUDIO SURVEILLANCE DETECTED" // Kích hoạt khi có nghe lén
+                        isEavesdropping -> "AUDIO SURVEILLANCE DETECTED"
                         !isOwner && (isRooted || isEmulator) -> "UNSECURE ENVIRONMENT"
                         !isOwner && (isCustomROM || isBootloaderUnlocked) -> "HARDWARE BREACH"
-                        isLegacyOS || isOutdatedHW -> "OUTDATED ENVIRONMENT"
                         else -> null
                     }
 
@@ -131,19 +128,17 @@ class MainActivity : AppCompatActivity() {
                             tvErrorCodeDigit?.text = "INTERNAL_ERROR: $currentErrorCode"
                             handleBankGradeViolation(currentViolation, tvStatus, errorOverlay, tvErrorMessage)
                         } else {
-                            // --- ĐỒNG BỘ DỮ LIỆU TỪ DEVICESIMULATOR ---
                             val specs = simulator.getRealTimeSpecs()
                             tvDevice?.text = specs
                             updateSecurityStatusLabel(tvStatus)
                             errorOverlay?.visibility = View.GONE
                             currentErrorCode = 0 
                             
-                            // Gửi báo cáo định kỳ
                             networkClient.sendSecureReport(security.encryptData(specs))
                         }
                     }
                 } catch (e: Exception) {
-                    // Bảo mật tuyệt đối
+                    // Fail-safe logic
                 }
                 delay(2000)
             }
@@ -151,7 +146,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * CHẾ ĐỘ TỰ HỦY CỐ ĐỊNH (4.0 GIÂY)
+     * Hiển thị Overlay vi phạm. 
+     * Lưu ý: activateSelfDestruct() hiện đã được vô hiệu hóa bên trong OmnisSecurity.
      */
     private fun handleBankGradeViolation(reason: String, statusView: TextView?, overlay: View?, errorText: TextView?) {
         val tvTimer = findViewById<TextView>(R.id.tv_self_destruct_timer)
@@ -159,20 +155,21 @@ class MainActivity : AppCompatActivity() {
         statusView?.text = "SHIELD: TERMINATED"
         statusView?.setTextColor(COLOR_DANGER_RED)
         overlay?.visibility = View.VISIBLE
-        errorText?.text = "UNAUTHORIZED INTERVENTION: $reason"
+        errorText?.text = "INTEGRITY BREACH: $reason"
 
         if (!selfDestructStarted) {
             selfDestructStarted = true
             updateJob?.cancel()
 
             lifecycleScope.launch(Dispatchers.Main) {
-                // Đếm ngược chính xác từ 4.0s về 0s
+                // Hiển thị đếm ngược nhưng không xóa dữ liệu (Theo OmnisSecurity cập nhật)
                 for (i in 40 downTo 0) {
                     val seconds = i / 10.0
-                    tvTimer?.text = String.format(Locale.US, "SELF-DESTRUCT IN: %.1fs", seconds)
+                    tvTimer?.text = String.format(Locale.US, "SHIELD LOCKDOWN IN: %.1fs", seconds)
                     delay(100)
                 }
-                security.activateSelfDestruct() // Xóa sạch dấu vết
+                // Gọi hàm stub - Không còn gây ra mất dữ liệu
+                security.activateSelfDestruct() 
                 finishAffinity()
             }
         }
