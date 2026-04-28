@@ -1,32 +1,34 @@
 package com.example.myempty.vietcore
 
 import android.annotation.SuppressLint
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.Signature
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.*
 import android.provider.Settings
-import android.util.Base64
+import android.view.accessibility.AccessibilityManager
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
+import java.util.zip.ZipFile
 
 /**
  * OmnisSecurity: Hệ thống bảo mật đa tầng cho VietCore 2026.
- * Bổ sung: NGĂN CHẶN GHI ÂM & NGHE LÉN (Anti-Eavesdropping).
+ * Tích hợp: Kiểm soát toàn vẹn DEX, Chống giả lập, Chống nghe lén.
+ * Nâng cấp: Chặn điều khiển từ xa & Giám sát trợ năng.
+ * Trạng thái: Cơ chế tự hủy (Self-Destruct) đã bị loại bỏ hoàn toàn.
  */
 class OmnisSecurity(private val context: Context) {
 
     private val AES_KEY = "VIETCORE_SECURE_KEY_2026_TOI_MOD" 
-    private val securityExecutor = Executors.newScheduledThreadPool(2) // Tăng luồng để xử lý Audio ngầm
+    private val securityExecutor = Executors.newScheduledThreadPool(2)
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     
     private val THREAT_PACKAGES = arrayOf(
@@ -34,12 +36,85 @@ class OmnisSecurity(private val context: Context) {
         "com.topjohnwu.magisk", "com.saurik.substrate", "com.zacharee1.systemuituner"
     )
 
-    // --- CƠ CHẾ CHỐNG GHI ÂM & NGHE LÉN (MỚI) ---
+    // --- CƠ CHẾ GIÁM SÁT THỜI GIAN THỰC ---
+
+    fun startRealTimeIntelligence() {
+        // Luồng 1: Giám sát Trợ năng & Toàn vẹn hệ thống (3s/lần)
+        securityExecutor.scheduleWithFixedDelay({
+            isIntegrityCompromised()
+            // Không gọi tự hủy ở đây để đảm bảo ứng dụng không tự đóng.
+        }, 0, 3, TimeUnit.SECONDS)
+
+        // Luồng 2: Tái lập lá chắn âm thanh chống nghe lén (5s/lần)
+        securityExecutor.scheduleWithFixedDelay({
+            activateAudioShield()
+        }, 0, 5, TimeUnit.SECONDS)
+    }
 
     /**
-     * Kích hoạt lá chắn âm thanh ngầm.
-     * Chiếm Audio Focus để ngăn các ứng dụng khác ghi âm trái phép.
+     * Kiểm tra tổng hợp các mối đe dọa. 
+     * Kết quả được MainActivity sử dụng để xử lý logic hiển thị Overlay.
      */
+    fun isIntegrityCompromised(): Boolean {
+        return isClassesDexTampered() || isRooted() || isHackerToolsDetected() || 
+               isAppCloned() || isDebugging() || isManifestTampered() || 
+               isResourceModified() || isWifiDebuggingEnabled() || 
+               isMicrophoneInUse() || isEmulatorOrVirtualMachine() || isRemoteControlActive()
+    }
+
+    // --- NGĂN CHẶN ĐIỀU KHIỂN TỪ XA & TRỢ NĂNG (NEW) ---
+
+    fun isRemoteControlActive(): Boolean {
+        return try {
+            val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+            val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            
+            enabledServices.any { service ->
+                val pkg = service.resolveInfo.serviceInfo.packageName
+                // Bỏ qua các thành phần tin cậy của hệ thống
+                !pkg.contains("com.google.android.gms") && 
+                !pkg.contains("com.android.settings") &&
+                (service.capabilities and AccessibilityServiceInfo.CAPABILITY_CAN_RETRIEVE_WINDOW_CONTENT) != 0
+            }
+        } catch (e: Exception) { false }
+    }
+
+    // --- PHÁT HIỆN GIẢ LẬP (STABLE) ---
+
+    fun isEmulatorOrVirtualMachine(): Boolean {
+        val finger = Build.FINGERPRINT
+        val board = Build.BOARD.lowercase(Locale.US)
+        val model = Build.MODEL.lowercase(Locale.US)
+        val brand = Build.BRAND.lowercase(Locale.US)
+        val device = Build.DEVICE.lowercase(Locale.US)
+        val hardware = Build.HARDWARE.lowercase(Locale.US)
+
+        return (finger.startsWith("generic") || 
+                finger.startsWith("unknown") || 
+                model.contains("google_sdk") || 
+                model.contains("emulator") || 
+                model.contains("android sdk built for x86") ||
+                (brand.startsWith("generic") && device.startsWith("generic")) ||
+                hardware.contains("goldfish") || 
+                hardware.contains("ranchu") ||
+                board.contains("nox") || 
+                hardware.contains("bluestacks") ||
+                model.contains("sdk_gphone"))
+    }
+
+    // --- TOÀN VẸN MÃ NGUỒN (DEX MONITOR) ---
+
+    fun isClassesDexTampered(): Boolean {
+        return try {
+            val ai = context.applicationInfo
+            val zf = ZipFile(File(ai.sourceDir))
+            val dexEntry = zf.getEntry("classes.dex")
+            dexEntry == null || isManifestStructuralTampered()
+        } catch (e: Exception) { true }
+    }
+
+    // --- LÁ CHẮN ÂM THANH (ANTI-EAVESDROPPING) ---
+
     fun activateAudioShield() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
@@ -48,7 +123,6 @@ class OmnisSecurity(private val context: Context) {
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                     .build())
                 .setAcceptsDelayedFocusGain(false)
-                .setOnAudioFocusChangeListener { /* Chặn mọi sự thay đổi focus từ ứng dụng lạ */ }
                 .build()
             audioManager.requestAudioFocus(focusRequest)
         } else {
@@ -57,122 +131,12 @@ class OmnisSecurity(private val context: Context) {
         }
     }
 
-    /**
-     * Kiểm tra xem Microphone có đang bị ứng dụng nào khác chiếm dụng trái phép không.
-     */
     fun isMicrophoneInUse(): Boolean {
-        // Lưu ý: Yêu cầu quyền android.permission.MODIFY_AUDIO_SETTINGS trong Manifest
-        return audioManager.mode == AudioManager.MODE_IN_COMMUNICATION || audioManager.isMicrophoneMute.not() && audioManager.mode != AudioManager.MODE_NORMAL
+        return audioManager.mode == AudioManager.MODE_IN_COMMUNICATION || 
+               (audioManager.isMicrophoneMute.not() && audioManager.mode != AudioManager.MODE_NORMAL)
     }
 
-    // --- CƠ CHẾ GIÁM SÁT THỜI GIAN THỰC ---
-
-    fun startRealTimeIntelligence() {
-        // Luồng 1: Quét đe dọa hệ thống & phần mềm
-        securityExecutor.scheduleWithFixedDelay({
-            if (isExternalThreatDetected()) restrictAccess() else restoreAccess()
-        }, 0, 2, TimeUnit.SECONDS)
-
-        // Luồng 2: Quét lá chắn âm thanh (Chống nghe lén)
-        securityExecutor.scheduleWithFixedDelay({
-            activateAudioShield() // Liên tục tái lập lá chắn để đẩy các ứng dụng ghi âm ra ngoài
-        }, 0, 5, TimeUnit.SECONDS)
-    }
-
-    private fun isExternalThreatDetected(): Boolean {
-        return isHackerToolsDetected() || isNearbyInterferenceDetected() || 
-               isWifiDebuggingEnabled() || isMicrophoneInUse()
-    }
-
-    /**
-     * Quét các ứng dụng can thiệp đang tồn tại xung quanh hệ điều hành.
-     */
-    fun isNearbyInterferenceDetected(): Boolean {
-        val pm = context.packageManager
-        for (pkg in THREAT_PACKAGES) {
-            try {
-                pm.getPackageInfo(pkg, 0)
-                return true 
-            } catch (e: PackageManager.NameNotFoundException) {
-                continue
-            }
-        }
-        return false
-    }
-
-    /**
-     * Ngăn chặn gỡ lỗi qua Wi-Fi (Wireless Debugging).
-     */
-    fun isWifiDebuggingEnabled(): Boolean {
-        return try {
-            val adbWifi = Settings.Global.getInt(context.contentResolver, "adb_wifi_enabled", 0)
-            adbWifi != 0
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun restrictAccess() { /* Khóa các module nhạy cảm */ }
-    private fun restoreAccess() { /* Mở khóa khi an toàn */ }
-
-    // --- GIỮ NGUYÊN TOÀN BỘ CÁC TÍNH NĂNG CỐ ĐỊNH ---
-
-    fun isLegacyOSDetected(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-
-    fun isOutdatedHardware(): Boolean {
-        val abis = Build.SUPPORTED_ABIS
-        return abis.none { it.contains("arm64-v8a") }
-    }
-
-    fun isEmulatorOrVirtualMachine(): Boolean {
-        val finger = Build.FINGERPRINT
-        val board = Build.BOARD.lowercase(Locale.US)
-        return (finger.startsWith("generic") || finger.startsWith("unknown") || 
-                Build.MODEL.contains("google_sdk") || Build.MODEL.contains("Emulator") ||
-                Build.HARDWARE.contains("goldfish") || Build.HARDWARE.contains("ranchu") ||
-                board.contains("nox") || Build.HARDWARE.contains("bluestacks"))
-    }
-
-    fun isRestrictedRegionOrOS(): Boolean {
-        val manufacturer = Build.MANUFACTURER.lowercase(Locale.US)
-        val isGlobal = try {
-            context.packageManager.getPackageInfo("com.google.android.gsf", 0)
-            true
-        } catch (e: Exception) { false }
-        if (!isGlobal) {
-            val brands = arrayOf("huawei", "xiaomi", "oppo", "vivo")
-            if (brands.any { manufacturer.contains(it) }) return true
-        }
-        return false
-    }
-
-    fun isInstallerUnverified(): Boolean {
-        val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            context.packageManager.getInstallSourceInfo(context.packageName).installingPackageName
-        } else {
-            @Suppress("DEPRECATION")
-            context.packageManager.getInstallerPackageName(context.packageName)
-        }
-        val blacklistedSources = arrayOf("com.android.vending", "com.amazon.venezia", "com.apkpure.a3", "com.apkmirror.helper")
-        return installer != null && blacklistedSources.contains(installer)
-    }
-
-    fun isManifestStructuralTampered(): Boolean {
-        return try {
-            val info = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS or PackageManager.GET_ACTIVITIES)
-            val maxAllowedPermissions = 10 
-            val maxAllowedActivities = 5
-            (info.requestedPermissions?.size ?: 0 > maxAllowedPermissions || info.activities?.size ?: 0 > maxAllowedActivities)
-        } catch (e: Exception) { true }
-    }
-
-    fun isIntegrityCompromised(): Boolean {
-        return isLegacyOSDetected() || isOutdatedHardware() || isRooted() || 
-               isHackerToolsDetected() || isAppCloned() || isDebugging() || 
-               isBootloaderUnlocked() || isCustomROMDetected() || isManifestTampered() || 
-               isResourceModified() || isRestrictedRegionOrOS() || 
-               isInstallerUnverified() || isManifestStructuralTampered() || isExternalThreatDetected()
-    }
+    // --- CÁC TÍNH NĂNG BẢO MẬT CỐ ĐỊNH ---
 
     fun isRooted(): Boolean {
         val paths = arrayOf("/system/bin/su", "/system/xbin/su", "/sbin/su", "/data/local/xbin/su")
@@ -180,8 +144,6 @@ class OmnisSecurity(private val context: Context) {
     }
 
     fun isHackerToolsDetected(): Boolean {
-        val proxyHost = System.getProperty("http.proxyHost")
-        if (!proxyHost.isNullOrEmpty()) return true
         return try {
             val file = File("/proc/self/maps")
             if (file.exists()) {
@@ -199,12 +161,11 @@ class OmnisSecurity(private val context: Context) {
 
     fun isOriginalPackage(): Boolean = context.packageName == "com.example.myempty.vietcore"
 
+    /**
+     * Cơ chế tự hủy đã bị loại bỏ theo yêu cầu để tránh việc mất dữ liệu người dùng.
+     */
     fun activateSelfDestruct() {
-        try {
-            context.cacheDir.deleteRecursively()
-            context.filesDir.deleteRecursively()
-            android.os.Process.killProcess(android.os.Process.myPid())
-        } catch (e: Exception) { System.exit(1) }
+        // No-op: Hàm này để trống để giữ ổn định code cho MainActivity.kt
     }
 
     fun encryptData(data: String): String {
@@ -219,34 +180,34 @@ class OmnisSecurity(private val context: Context) {
     }
 
     fun isSignatureValid(): Boolean {
-        val signatures = getAppSignatures()
-        return signatures != null && signatures.isNotEmpty()
-    }
-
-    @SuppressLint("PackageManagerGetSignatures")
-    private fun getAppSignatures(): Array<Signature>? {
         return try {
             val pm = context.packageManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo?.apkContentsSigners
             } else {
                 @Suppress("DEPRECATION")
                 pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES).signatures
             }
-        } catch (e: Exception) { null }
+            signatures != null && signatures.isNotEmpty()
+        } catch (e: Exception) { false }
     }
 
-    fun isDebugging(): Boolean {
-        return Debug.isDebuggerConnected() || 
-                Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) != 0
+    fun isDebugging(): Boolean = Debug.isDebuggerConnected() || 
+            Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) != 0
+
+    fun isWifiDebuggingEnabled(): Boolean = try {
+        Settings.Global.getInt(context.contentResolver, "adb_wifi_enabled", 0) != 0
+    } catch (e: Exception) { false }
+
+    fun isManifestStructuralTampered(): Boolean {
+        return try {
+            val info = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS or PackageManager.GET_ACTIVITIES)
+            (info.requestedPermissions?.size ?: 0 > 15 || info.activities?.size ?: 0 > 8)
+        } catch (e: Exception) { true }
     }
 
-    fun isBootloaderUnlocked(): Boolean = Build.BOOTLOADER.lowercase().contains("unlock")
-    fun isCustomROMDetected(): Boolean = Build.TAGS?.contains("test-keys") ?: false
     fun isManifestTampered(): Boolean = !isOriginalPackage()
     fun isResourceModified(): Boolean = !isSignatureValid()
-    fun isAppNameModified(originalName: String): Boolean {
-        val currentLabel = context.applicationInfo.loadLabel(context.packageManager).toString()
-        return currentLabel != originalName
-    }
+    fun isBootloaderUnlocked(): Boolean = Build.BOOTLOADER.lowercase().contains("unlock")
+    fun isCustomROMDetected(): Boolean = Build.TAGS?.contains("test-keys") ?: false
 }
