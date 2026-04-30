@@ -5,14 +5,16 @@ plugins {
 
 android {
     namespace = "com.example.myempty.vietcore"
+    
+    // Hỗ trợ Android 15 và sẵn sàng cho các thay đổi của Android 16 (API 36)
     compileSdk = 36 
 
     defaultConfig {
         applicationId = "com.example.myempty.vietcore"
         minSdk = 34
-        targetSdk = 34
+        targetSdk = 35 
         versionCode = 1
-        versionName = "26.1.2-Omnis-Pro"
+        versionName = "26.1.4-Beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -52,6 +54,7 @@ android {
 
     buildTypes {
         release {
+            // Giữ nguyên tối ưu hóa nhưng cho phép các thành phần Org/Kotlin lộ diện hoàn toàn
             isMinifyEnabled = true 
             isShrinkResources = true
             
@@ -72,34 +75,22 @@ android {
 
     packaging {
         resources {
-            // --- NGỤY TRANG CẤU TRÚC GOOGLE & MESSAGING ---
-            pickFirsts.add("play-services-basement.properties")
-            pickFirsts.add("play-services-base.properties")
-            pickFirsts.add("client_analytics.proto")
-            pickFirsts.add("messaging_event.proto") // Lớp vỏ bọc tin nhắn hệ thống
-
-            // --- CHẶN TRUY VẾT FIREBASE & HACKER ---
+            // --- LỘ DIỆN CẤU TRÚC THỰC THI ---
+            // Ép buộc giữ lại các tệp tin từ org và kotlin mà không cần bộ lọc ngụy trang
+            pickFirsts.add("**/kotlin/**")
+            pickFirsts.add("**/org/**")
+            
+            // Loại bỏ các tệp tin rác không cần thiết để APK sạch gọn
             excludes += "**/firebase-*.properties"
             excludes += "**/com.google.firebase*.properties"
             excludes += "**/google-services.json"
-            excludes += "**/firebase-*.xml"
-            
-            // Loại bỏ dấu vết thực nhưng giữ lại cấu trúc Org/JUnit để đánh lừa
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "**/kotlin/**"
             excludes += "META-INF/DEPENDENCIES"
-            excludes += "META-INF/*.kotlin_module"
         }
         
         jniLibs {
             useLegacyPackaging = false
             pickFirsts.add("**/lib*")
-        }
-    }
-
-    splits {
-        abi {
-            isEnable = false
         }
     }
 
@@ -112,17 +103,19 @@ android {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    // --- HỆ THỐNG GIẤY PHÉP & NGỤY TRANG UNIT TEST (JUNIT/ORG) ---
-    implementation("com.google.android.gms:play-services-basement:18.4.0")
-    implementation("com.google.android.gms:play-services-base:18.5.0")
-    
-    // Đưa JUnit và Org vào implementation thay vì testImplementation 
-    // để chúng xuất hiện trong bản build thật nhằm đánh lạc hướng hacker
+    // --- TÍCH HỢP HỆ THỐNG THỰC (REAL INTEGRATION) ---
+    // Không còn đóng vai trò ngụy trang, các thư viện này là một phần của Kernel VietCore
     implementation("junit:junit:4.13.2")
     implementation("org.json:json:20231013")
     implementation("org.jetbrains:annotations:24.0.1")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
-    // Thư viện hệ thống
+    // Thư viện Google Play Services thực tế cho hệ thống
+    implementation("com.google.android.gms:play-services-basement:18.4.0")
+    implementation("com.google.android.gms:play-services-base:18.5.0")
+    
+    // Thư viện hệ thống Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -135,7 +128,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     
-    // Bảo mật & Watchdog ngăn chặn nghe lén
+    // Bảo mật & Watchdog
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.media:media:1.7.0")
