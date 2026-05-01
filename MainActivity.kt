@@ -14,8 +14,7 @@ import kotlin.random.Random
 /**
  * MainActivity: Trung tâm điều phối bảo mật VietCore 2026.
  * Nhà phát triển: Nguyễn Minh Tới.
- * Phiên bản: 26.1.4-Beta
- * Cơ chế: Giám sát toàn vẹn thời gian thực, khóa hệ thống khi phát hiện can thiệp.
+ * Tích hợp: Chặn phần cứng không phải di động (TV Box, PC, Emulator).
  */
 class MainActivity : AppCompatActivity() {
 
@@ -28,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     private var selfDestructStarted = false
     private var currentErrorCode: Int = 0
 
-    // Bảng màu hệ thống đặc trưng của VietCore
     private val COLOR_MATRIX_GREEN = Color.parseColor("#00FF41")
     private val COLOR_DANGER_RED = Color.parseColor("#FF0000")
     private val COLOR_SCANNING_CYAN = Color.parseColor("#00FFFF")
@@ -39,7 +37,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Ngăn chặn chụp ảnh và quay màn hình để bảo vệ dữ liệu nhạy cảm
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
@@ -47,22 +44,19 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        // Khởi tạo các module hệ thống
         security = OmnisSecurity(this)
         simulator = DeviceSimulator(this)
         networkClient = SecurityClient.getInstance()
         
-        // Kích hoạt lá chắn bảo mật thời gian thực
         security.startRealTimeIntelligence()
 
-        setupHeaderInfo() // Cập nhật thông tin tác giả và phiên bản ở phía trên
+        setupHeaderInfo() 
         performInitialSecurityCheck()
     }
 
     private fun performInitialSecurityCheck() {
         lifecycleScope.launch(Dispatchers.Main) {
             val payload = security.encryptData("LAUNCH_INIT_${System.currentTimeMillis()}")
-            // Xác minh tính toàn vẹn với máy chủ Trung tâm VietCore
             val response = networkClient.verifyLaunchIntegrity(payload)
             
             if (response.contains("GENUINE") || response == "GENUINE_EMPTY" || response.contains("SUCCESS")) {
@@ -88,37 +82,35 @@ class MainActivity : AppCompatActivity() {
         updateJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    // 1. Kiểm tra định danh & Chữ ký APK
                     val currentPkg = packageName
                     val isWrongIdentity = currentPkg != AUTHORIZED_PACKAGE
                     val isOriginal = security.isOriginalPackage()
                     val isOwner = isOriginal && security.isSignatureValid()
 
-                    // 2. Kiểm tra môi trường (Root, Emulator, Custom ROM, Unlocked Bootloader)
+                    // Kiểm tra môi trường & Phần cứng (Bao gồm chặn TV Box/PC)
                     val isEmulator = security.isEmulatorOrVirtualMachine() 
                     val isRooted = security.isRooted()
                     val isCustomROM = security.isCustomROMDetected()
                     val isBootloaderUnlocked = security.isBootloaderUnlocked()
+                    val isNonMobile = security.isNonMobileHardwareDetected() 
                     
-                    // 3. Kiểm tra công cụ can thiệp & Tùy chọn nhà phát triển
                     val isCloned = security.isAppCloned()
                     val isDebugging = security.isDebugging()
                     val isHackerTools = security.isHackerToolsDetected()
                     val isWifiDebug = security.isWifiDebuggingEnabled()
                     val isDevOptions = security.isDeveloperOptionsEnabled()
                     
-                    // 4. Kiểm tra toàn vẹn mã nguồn (DEX, Manifest, Resources)
                     val isDexModified = security.isClassesDexTampered() 
                     val isManifestBroken = security.isManifestTampered()
                     val isResourceBroken = security.isResourceModified()
                     val isStructureModified = security.isManifestStructuralTampered()
 
-                    // 5. Kiểm tra hành vi xâm nhập (Remote Control, Microphone)
                     val isRemoteControl = security.isRemoteControlActive()
                     val isEavesdropping = security.isMicrophoneInUse()
 
-                    // Logic xác định vi phạm
+                    // Logic xác định vi phạm (Ưu tiên chặn phần cứng lạ)
                     val currentViolation = when {
+                        isNonMobile -> "HARDWARE RESTRICTION: MOBILE ONLY"
                         isDevOptions -> "DEVELOPER OPTIONS RESTRICTED"
                         isWrongIdentity || isManifestBroken || isStructureModified -> "APK IDENTITY BREACH"
                         isDexModified -> "CORE LOGIC TAMPERED (DEX)"
@@ -140,20 +132,15 @@ class MainActivity : AppCompatActivity() {
                             tvErrorCodeDigit?.text = "INTERNAL_ERROR: $currentErrorCode"
                             handleBankGradeViolation(currentViolation, tvStatus, errorOverlay, tvErrorMessage)
                         } else {
-                            // Cập nhật thông số thiết bị thời gian thực vào vùng hiển thị chi tiết
                             val specs = simulator.getRealTimeSpecs()
                             tvDevice?.text = specs
                             updateSecurityStatusLabel(tvStatus)
                             errorOverlay?.visibility = View.GONE
                             currentErrorCode = 0 
-                            
-                            // Đồng bộ dữ liệu an ninh đã mã hóa về iCloud
                             networkClient.syncToICloud(security.encryptData(specs))
                         }
                     }
-                } catch (e: Exception) {
-                    // Fail-safe: Tiếp tục quét để đảm bảo không có lỗ hổng nào bị bỏ qua
-                }
+                } catch (e: Exception) {}
                 delay(2000) 
             }
         }
@@ -161,7 +148,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleBankGradeViolation(reason: String, statusView: TextView?, overlay: View?, errorText: TextView?) {
         val tvTimer = findViewById<TextView>(R.id.tv_self_destruct_timer)
-
         statusView?.text = "SHIELD: TERMINATED"
         statusView?.setTextColor(COLOR_DANGER_RED)
         overlay?.visibility = View.VISIBLE
@@ -170,16 +156,14 @@ class MainActivity : AppCompatActivity() {
         if (!selfDestructStarted) {
             selfDestructStarted = true
             updateJob?.cancel()
-
             lifecycleScope.launch(Dispatchers.Main) {
-                // Đếm ngược phong tỏa hệ thống (4.0s)
                 for (i in 40 downTo 0) {
                     val seconds = i / 10.0
                     tvTimer?.text = String.format(Locale.US, "SHIELD LOCKDOWN IN: %.1fs", seconds)
                     delay(100)
                 }
                 security.activateSelfDestruct() 
-                finishAffinity() // Ngắt toàn bộ tiến trình ứng dụng
+                finishAffinity()
             }
         }
     }
@@ -203,7 +187,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupHeaderInfo() {
-        // Cập nhật thông tin tác giả và phiên bản lên khu vực Header mới
         findViewById<TextView>(R.id.tv_author)?.apply {
             text = "Developer: Nguyen Minh Toi"
             setTextColor(Color.parseColor("#888888"))
