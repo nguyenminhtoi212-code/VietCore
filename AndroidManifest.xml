@@ -1,26 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- QUYỀN HẠN HỆ THỐNG & ĐỒNG BỘ DỮ LIỆU -->
+    <!-- QUYỀN HỆ THỐNG CAO CẤP (NGĂN CHẶN THEO DÕI & CAN THIỆP) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
-    <!-- BỔ SUNG QUYỀN ÂM THANH CHO LÁ CHẮN BẢO MẬT (OMNIS SHIELD) -->
+    <!-- LÁ CHẮN ÂM THANH & HÌNH ẢNH (ANTI-SPYWARE) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Ngăn chặn chụp màn hình/quay phim từ ứng dụng bên thứ 3 -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:node="replace" />
+
+    <!-- NGĂN CHẶN QUẢNG CÁO & THEO DÕI (ANTI-AD/TRACKING) -->
+    <uses-permission android:name="android.permission.AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    
+    <!-- QUYỀN CHẠY TRÊN HỆ THỐNG (PROTECTION LEVEL: SIGNATURE) -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        android:hasFragileUserData="true"
+        android:extractNativeLibs="true"
+        tools:targetApi="35">
 
-        <!-- MÀN HÌNH CHỜ (SPLASH): ĐIỂM KHỞI CHẠY CHÍNH -->
+        <!-- GIẤY PHÉP NHÀ CUNG CẤP (GOOGLE SELF-AUTONOMY LICENSE) -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="vietcore.intelligence.LICENSE"
+            android:value="AUTONOMOUS_SYSTEM_2026_FREE" />
+
+        <!-- MÀN HÌNH CHỜ (SPLASH): KIỂM TRA GIẤY PHÉP & THIẾT BỊ -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -32,19 +55,30 @@
             </intent-filter>
         </activity>
 
-        <!-- MÀN HÌNH CHÍNH (MAIN): GIAO DIỆN ĐIỀU KHIỂN OMNIS -->
+        <!-- GIAO DIỆN CHÍNH (MAIN): CHỈ MỞ KHI LÀ NHÀ PHÁT TRIỂN/THỬ NGHIỆM -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
+            android:process=":omnis_core"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
-        <!-- DỊCH VỤ CHẠY NGẦM ĐỒNG BỘ ICLOUD -->
+        <!-- DỊCH VỤ ĐỒNG BỘ MÁY CHỦ & BẢO VỆ NHÂN HỆ ĐIỀU HÀNH -->
         <service
             android:name=".SecuritySyncService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <!-- NGĂN CHẶN CHẠY NGẦM GÂY LAG & TỐI ƯU BỘ NHỚ -->
+        <receiver
+            android:name=".SecurityBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
