@@ -1,16 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Mẫu gốc bạn cung cấp -->
+
+    <!-- Base application theme using Material 3 -->
     <style name="Base.AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Tùy chỉnh thêm màu sắc hệ thống tại đây nếu cần -->
-        <item name="colorPrimary">#00FF41</item>
+        <item name="colorPrimary">#00FF41</item> <!-- Matrix Green -->
+        <item name="android:statusBarColor">@android:color/black</item>
     </style>
 
     <style name="AppTheme" parent="Base.AppTheme" />
 
-    <!-- Style dành riêng cho SplashActivity để sửa lỗi FAILURE -->
+    <!-- Fullscreen style for SplashActivity -->
     <style name="Theme.AppCompat.NoActionBar.FullScreen" parent="Base.AppTheme">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:background">#000000</item>
+        <item name="android:windowBackground">@android:color/black</item>
     </style>
+
+    <!-- Unified Security Dialog Theme (Fixed for MainActivity) -->
+    <style name="SecurityDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:textColorPrimary">#00FF41</item> <!-- Matrix Green -->
+        <item name="colorAccent">#00FF41</item>
+    </style>
+
 </resources>
