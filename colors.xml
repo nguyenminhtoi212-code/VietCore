@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#00FF41</color> <color name="background_dark">#0A0A0A</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#888888</color>
+    <color name="terminal_green">#00FF41</color>
+
+    <color name="status_verified">#00FF41</color> 
+    
+    <color name="status_compromised">#FF0000</color>
+    
+    <color name="status_virus_ip">#FF8C00</color>
+    
+    <color name="status_api_fake">#D000FF</color>
+    
+    <color name="status_scanning">#00FFFF</color>
+    
+    <color name="status_offline">#FFFF00</color>
+
+    <color name="border_gray">#333333</color>
+    <color name="header_blue">#00AEEF</color>
+    <color name="footer_gray">#555555</color>
+</resources>
