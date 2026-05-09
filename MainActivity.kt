@@ -1,10 +1,14 @@
 package com.example.myempty.vietcore
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.*
@@ -12,9 +16,10 @@ import java.util.Locale
 import kotlin.random.Random
 
 /**
- * MainActivity: Trung tâm điều phối bảo mật VietCore 2026.
- * Nhà phát triển: Nguyễn Minh Tới.
- * Tích hợp: Chặn phần cứng không phải di động (TV Box, PC, Emulator).
+ * MainActivity: VietCore 2026 Security Coordination Center.
+ * Developer: Nguyen Minh Toi.
+ * Integration: Non-mobile hardware blocking (TV Box, PC, Emulator) 
+ * and Secure Navigation Menu System.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -37,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Block screenshots and screen recording (Bank-Grade Security)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
@@ -44,15 +50,62 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
+        // Setup Header/ActionBar
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        supportActionBar?.title = "VietCore Dashboard"
+
+        // Initialize Core Modules
         security = OmnisSecurity(this)
         simulator = DeviceSimulator(this)
         networkClient = SecurityClient.getInstance()
         
+        // Activate AI Shield
         security.startRealTimeIntelligence()
 
         setupHeaderInfo() 
         performInitialSecurityCheck()
     }
+
+    // --- NAVIGATION MENU SYSTEM ---
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Tự động hiển thị menu từ tài nguyên XML đã tạo
+        menuInflater.inflate(R.menu.security_nav_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.nav_back -> {
+                // Quay lại nhưng vẫn giữ ứng dụng chạy mượt mà
+                onBackPressedDispatcher.onBackPressed()
+                true
+            }
+            R.id.nav_exit -> {
+                // Chỉ thoát khi người dùng chủ động xác nhận OK
+                showExitConfirmation()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun showExitConfirmation() {
+        // Cố định sử dụng SecurityDialogTheme để đồng bộ giao diện Dark Mode
+        AlertDialog.Builder(this, R.style.SecurityDialogTheme)
+            .setTitle("Exit Confirmation")
+            .setMessage("The VietCore system will safely disconnect. Do you wish to proceed?")
+            .setPositiveButton("OK") { _, _ ->
+                // Hủy bỏ tiến trình cập nhật trước khi đóng hoàn toàn
+                updateJob?.cancel()
+                finishAffinity()
+                System.exit(0)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // --- ADVANCED SECURITY LOGIC ---
 
     private fun performInitialSecurityCheck() {
         lifecycleScope.launch(Dispatchers.Main) {
@@ -87,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                     val isOriginal = security.isOriginalPackage()
                     val isOwner = isOriginal && security.isSignatureValid()
 
-                    // Kiểm tra môi trường & Phần cứng (Bao gồm chặn TV Box/PC)
+                    // Hardware & Environment Verification (Blocks TV Box/PC)
                     val isEmulator = security.isEmulatorOrVirtualMachine() 
                     val isRooted = security.isRooted()
                     val isCustomROM = security.isCustomROMDetected()
@@ -108,7 +161,7 @@ class MainActivity : AppCompatActivity() {
                     val isRemoteControl = security.isRemoteControlActive()
                     val isEavesdropping = security.isMicrophoneInUse()
 
-                    // Logic xác định vi phạm (Ưu tiên chặn phần cứng lạ)
+                    // Violation Logic
                     val currentViolation = when {
                         isNonMobile -> "HARDWARE RESTRICTION: MOBILE ONLY"
                         isDevOptions -> "DEVELOPER OPTIONS RESTRICTED"
@@ -192,12 +245,13 @@ class MainActivity : AppCompatActivity() {
             setTextColor(Color.parseColor("#888888"))
         }
         findViewById<TextView>(R.id.tv_version)?.apply {
-            text = "Core: VietCore 26.1.4-Beta"
+            text = "Core: VietCore 26.1.5-Beta"
             setTextColor(COLOR_SCANNING_CYAN)
         }
     }
 
     override fun onDestroy() {
+        // Đảm bảo Job được hủy để tránh treo load bộ nhớ
         updateJob?.cancel()
         super.onDestroy()
     }
