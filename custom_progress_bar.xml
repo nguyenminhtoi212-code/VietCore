@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Nền của thanh Progress (Màu xám tối) -->
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="0dp" />
+            <color android:color="#1A1A1A" />
+        </shape>
+    </item>
+
+    <!-- Phần tiến trình đang chạy (Màu xanh Cyan #00FFFF) -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="0dp" />
+                <color android:color="#00FFFF" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>
