@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.myempty.vietcore">
 
     <!-- QUYỀN HỆ THỐNG CAO CẤP (NGĂN CHẶN THEO DÕI & CAN THIỆP) -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -12,10 +13,10 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Ngăn chặn chụp màn hình/quay phim từ ứng dụng bên thứ 3 -->
+    <!-- Ngăn chặn can thiệp từ ứng dụng bên thứ 3 vào bộ nhớ -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:node="replace" />
 
-    <!-- NGĂN CHẶN QUẢNG CÁO & THEO DÕI (ANTI-AD/TRACKING) -->
+    <!-- LOẠI BỎ ID QUẢNG CÁO & THEO DÕI (DỮ LIỆU SẠCH) -->
     <uses-permission android:name="android.permission.AD_ID" tools:node="remove" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     
@@ -25,9 +26,9 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_my_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/ic_my_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:hardwareAccelerated="true"
@@ -35,7 +36,7 @@
         android:extractNativeLibs="true"
         tools:targetApi="35">
 
-        <!-- GIẤY PHÉP NHÀ CUNG CẤP (GOOGLE SELF-AUTONOMY LICENSE) -->
+        <!-- GIẤY PHÉP TỰ ĐỘNG (VIETCORE AUTONOMOUS LICENSE 2026) -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -43,7 +44,7 @@
             android:name="vietcore.intelligence.LICENSE"
             android:value="AUTONOMOUS_SYSTEM_2026_FREE" />
 
-        <!-- MÀN HÌNH CHỜ (SPLASH): KIỂM TRA GIẤY PHÉP & THIẾT BỊ -->
+        <!-- MÀN HÌNH CHỜ (SPLASH): XÁC THỰC GIẤY PHÉP HỆ THỐNG -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -55,7 +56,7 @@
             </intent-filter>
         </activity>
 
-        <!-- GIAO DIỆN CHÍNH (MAIN): CHỈ MỞ KHI LÀ NHÀ PHÁT TRIỂN/THỬ NGHIỆM -->
+        <!-- GIAO DIỆN CHÍNH (MAIN): CHẠY TRÊN TIẾN TRÌNH BIỆT LẬP OMNIS_CORE -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
@@ -63,7 +64,7 @@
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
-        <!-- DỊCH VỤ ĐỒNG BỘ MÁY CHỦ & BẢO VỆ NHÂN HỆ ĐIỀU HÀNH -->
+        <!-- DỊCH VỤ ĐỒNG BỘ MÁY CHỦ & BẢO VỆ NHÂN (KERNEL PROTECTION) -->
         <service
             android:name=".SecuritySyncService"
             android:enabled="true"
@@ -71,7 +72,7 @@
             android:foregroundServiceType="dataSync"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <!-- NGĂN CHẶN CHẠY NGẦM GÂY LAG & TỐI ƯU BỘ NHỚ -->
+        <!-- NGĂN CHẶN CHẠY NGẦM GÂY LAG & TỐI ƯU BỘ NHỚ KHI KHỞI ĐỘNG -->
         <receiver
             android:name=".SecurityBootReceiver"
             android:exported="false">
