@@ -9,15 +9,27 @@
      android:fitsSystemWindows="true"
      tools:context=".MainActivity">
 
+    <androidx.appcompat.widget.Toolbar
+         android:layout_height="?attr/actionBarSize"
+         android:layout_width="match_parent"
+         android:background="#000000"
+         android:elevation="4dp"
+         app:layout_constraintTop_toTopOf="parent"
+         app:layout_constraintStart_toStartOf="parent"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+         android:id="@+id/toolbar_secure" />
+
     <TextView
          android:layout_height="wrap_content"
          android:layout_width="wrap_content"
-         app:layout_constraintTop_toTopOf="parent"
          android:layout_margin="16dp"
          app:layout_constraintStart_toStartOf="parent"
          android:fontFamily="monospace"
          android:textSize="12sp"
          android:textColor="#00FF41"
+         app:layout_constraintTop_toBottomOf="@id/toolbar_secure"
          android:id="@+id/tv_security_status"
          android:text="OMNIS SECURITY: MONITORING ACTIVE"
          android:textStyle="bold" />
@@ -48,7 +60,7 @@
              android:textSize="10sp"
              android:textColor="#00FFFF"
              android:id="@+id/tv_version"
-             android:text="Core: VietCore 26.1.4-Beta" />
+             android:text="Core: VietCore 26.1.6-Beta" />
 
     </LinearLayout>
 
