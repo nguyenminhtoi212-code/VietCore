@@ -10,7 +10,9 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
+import com.example.myempty.vietcore.R
 import kotlinx.coroutines.*
 import java.util.Locale
 import kotlin.random.Random
@@ -18,8 +20,7 @@ import kotlin.random.Random
 /**
  * MainActivity: VietCore 2026 Security Coordination Center.
  * Developer: Nguyen Minh Toi.
- * Integration: Non-mobile hardware blocking (TV Box, PC, Emulator) 
- * and Secure Navigation Menu System.
+ * Fix: Lỗi Unresolved reference 'SettingsHandler' bằng cách gọi SettingsActivity.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Block screenshots and screen recording (Bank-Grade Security)
+        // Chặn ảnh chụp màn hình và ghi màn hình
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
@@ -50,39 +51,43 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        // Setup Header/ActionBar
-        supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        supportActionBar?.title = "VietCore Dashboard"
+        // --- THIẾT LẬP TOOLBAR ---
+        val toolbar = findViewById<Toolbar>(R.id.toolbar_secure)
+        if (toolbar != null) {
+            setSupportActionBar(toolbar)
+            supportActionBar?.title = "VietCore Dashboard"
+        }
 
-        // Initialize Core Modules
+        // Khởi tạo các module lõi
         security = OmnisSecurity(this)
         simulator = DeviceSimulator(this)
         networkClient = SecurityClient.getInstance()
         
-        // Activate AI Shield
         security.startRealTimeIntelligence()
 
         setupHeaderInfo() 
         performInitialSecurityCheck()
     }
 
-    // --- NAVIGATION MENU SYSTEM ---
+    // --- HỆ THỐNG MENU ĐIỀU HƯỚNG ---
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Tự động hiển thị menu từ tài nguyên XML đã tạo
         menuInflater.inflate(R.menu.security_nav_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_settings -> {
+                // FIX LỖI: Gọi trực tiếp SettingsActivity đã tạo thay vì SettingsHandler
+                SettingsActivity.showThemeSettings(this)
+                true
+            }
             R.id.nav_back -> {
-                // Quay lại nhưng vẫn giữ ứng dụng chạy mượt mà
                 onBackPressedDispatcher.onBackPressed()
                 true
             }
             R.id.nav_exit -> {
-                // Chỉ thoát khi người dùng chủ động xác nhận OK
                 showExitConfirmation()
                 true
             }
@@ -91,12 +96,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showExitConfirmation() {
-        // Cố định sử dụng SecurityDialogTheme để đồng bộ giao diện Dark Mode
         AlertDialog.Builder(this, R.style.SecurityDialogTheme)
             .setTitle("Exit Confirmation")
             .setMessage("The VietCore system will safely disconnect. Do you wish to proceed?")
             .setPositiveButton("OK") { _, _ ->
-                // Hủy bỏ tiến trình cập nhật trước khi đóng hoàn toàn
                 updateJob?.cancel()
                 finishAffinity()
                 System.exit(0)
@@ -105,7 +108,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // --- ADVANCED SECURITY LOGIC ---
+    // --- LOGIC BẢO MẬT ---
 
     private fun performInitialSecurityCheck() {
         lifecycleScope.launch(Dispatchers.Main) {
@@ -135,47 +138,7 @@ class MainActivity : AppCompatActivity() {
         updateJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    val currentPkg = packageName
-                    val isWrongIdentity = currentPkg != AUTHORIZED_PACKAGE
-                    val isOriginal = security.isOriginalPackage()
-                    val isOwner = isOriginal && security.isSignatureValid()
-
-                    // Hardware & Environment Verification (Blocks TV Box/PC)
-                    val isEmulator = security.isEmulatorOrVirtualMachine() 
-                    val isRooted = security.isRooted()
-                    val isCustomROM = security.isCustomROMDetected()
-                    val isBootloaderUnlocked = security.isBootloaderUnlocked()
-                    val isNonMobile = security.isNonMobileHardwareDetected() 
-                    
-                    val isCloned = security.isAppCloned()
-                    val isDebugging = security.isDebugging()
-                    val isHackerTools = security.isHackerToolsDetected()
-                    val isWifiDebug = security.isWifiDebuggingEnabled()
-                    val isDevOptions = security.isDeveloperOptionsEnabled()
-                    
-                    val isDexModified = security.isClassesDexTampered() 
-                    val isManifestBroken = security.isManifestTampered()
-                    val isResourceBroken = security.isResourceModified()
-                    val isStructureModified = security.isManifestStructuralTampered()
-
-                    val isRemoteControl = security.isRemoteControlActive()
-                    val isEavesdropping = security.isMicrophoneInUse()
-
-                    // Violation Logic
-                    val currentViolation = when {
-                        isNonMobile -> "HARDWARE RESTRICTION: MOBILE ONLY"
-                        isDevOptions -> "DEVELOPER OPTIONS RESTRICTED"
-                        isWrongIdentity || isManifestBroken || isStructureModified -> "APK IDENTITY BREACH"
-                        isDexModified -> "CORE LOGIC TAMPERED (DEX)"
-                        isResourceBroken -> "RESOURCE INTEGRITY BREACH"
-                        isRemoteControl -> "REMOTE CONTROL EXPLOIT"
-                        isHackerTools || isDebugging || isCloned -> "HACKER TOOLS DETECTED"
-                        isWifiDebug -> "WIRELESS DEBUGGING ACTIVE"
-                        isEavesdropping -> "AUDIO SURVEILLANCE DETECTED"
-                        !isOwner && (isRooted || isEmulator) -> "UNSECURE ENVIRONMENT"
-                        !isOwner && (isCustomROM || isBootloaderUnlocked) -> "HARDWARE BREACH"
-                        else -> null
-                    }
+                    val currentViolation = checkSecurityViolations()
 
                     withContext(Dispatchers.Main) {
                         if (currentViolation != null) {
@@ -197,6 +160,35 @@ class MainActivity : AppCompatActivity() {
                 delay(2000) 
             }
         }
+    }
+
+    private fun checkSecurityViolations(): String? {
+        val isOriginal = security.isOriginalPackage()
+        val isOwner = isOriginal && security.isSignatureValid()
+
+        if (security.isNonMobileHardwareDetected()) return "HARDWARE RESTRICTION: MOBILE ONLY"
+        if (security.isDeveloperOptionsEnabled()) return "DEVELOPER OPTIONS RESTRICTED"
+        
+        if (packageName != AUTHORIZED_PACKAGE || security.isManifestTampered() || security.isManifestStructuralTampered()) {
+            return "APK IDENTITY BREACH"
+        }
+        
+        if (security.isClassesDexTampered()) return "CORE LOGIC TAMPERED (DEX)"
+        if (security.isResourceModified()) return "RESOURCE INTEGRITY BREACH"
+        
+        if (security.isRemoteControlActive()) return "REMOTE CONTROL EXPLOIT"
+        if (security.isMicrophoneInUse()) return "AUDIO SURVEILLANCE DETECTED"
+        if (security.isHackerToolsDetected() || security.isDebugging() || security.isAppCloned()) {
+            return "HACKER TOOLS DETECTED"
+        }
+        if (security.isWifiDebuggingEnabled()) return "WIRELESS DEBUGGING ACTIVE"
+
+        if (!isOwner) {
+            if (security.isRooted() || security.isEmulatorOrVirtualMachine()) return "UNSECURE ENVIRONMENT"
+            if (security.isCustomROMDetected() || security.isBootloaderUnlocked()) return "HARDWARE BREACH"
+        }
+
+        return null
     }
 
     private fun handleBankGradeViolation(reason: String, statusView: TextView?, overlay: View?, errorText: TextView?) {
@@ -245,13 +237,12 @@ class MainActivity : AppCompatActivity() {
             setTextColor(Color.parseColor("#888888"))
         }
         findViewById<TextView>(R.id.tv_version)?.apply {
-            text = "Core: VietCore 26.1.5-Beta"
+            text = "Core: VietCore 26.1.6-Beta"
             setTextColor(COLOR_SCANNING_CYAN)
         }
     }
 
     override fun onDestroy() {
-        // Đảm bảo Job được hủy để tránh treo load bộ nhớ
         updateJob?.cancel()
         super.onDestroy()
     }
