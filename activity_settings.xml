@@ -40,7 +40,7 @@
                  android:fontFamily="monospace"
                  android:textSize="16sp"
                  android:textColor="#00FF41"
-                 android:text="VIETCORE SYSTEM SETTINGS"
+                 android:text="VIETCORE CONFIGURATION"
                  android:textStyle="bold" />
 
             <View
@@ -49,6 +49,15 @@
                  android:layout_marginBottom="16dp"
                  android:background="#1A1A1A"
                  android:layout_marginTop="16dp" />
+
+            <TextView
+                 android:layout_height="wrap_content"
+                 android:layout_width="wrap_content"
+                 android:layout_marginBottom="8dp"
+                 android:textSize="12sp"
+                 android:fontFamily="monospace"
+                 android:textColor="#888888"
+                 android:text="APPEARANCE" />
 
             <LinearLayout
                  android:layout_height="56dp"
@@ -128,6 +137,87 @@
                  android:layout_marginBottom="16dp"
                  android:background="#1A1A1A"
                  android:layout_marginTop="16dp" />
+
+            <TextView
+                 android:layout_height="wrap_content"
+                 android:layout_width="wrap_content"
+                 android:layout_marginBottom="8dp"
+                 android:textSize="12sp"
+                 android:fontFamily="monospace"
+                 android:textColor="#888888"
+                 android:text="SYSTEM PERMISSIONS" />
+
+            <LinearLayout
+                 android:layout_height="56dp"
+                 android:layout_width="match_parent"
+                 android:paddingEnd="8dp"
+                 android:background="?android:attr/selectableItemBackground"
+                 android:gravity="center_vertical"
+                 android:clickable="true"
+                 android:paddingStart="8dp"
+                 android:focusable="true"
+                 android:id="@+id/btn_manage_permissions">
+
+                <ImageView
+                     android:layout_height="24dp"
+                     android:layout_width="24dp"
+                     android:src="@android:drawable/ic_menu_manage"
+                     app:tint="#00FFFF" />
+
+                <TextView
+                     android:layout_height="wrap_content"
+                     android:layout_width="0dp"
+                     android:fontFamily="monospace"
+                     android:textSize="14sp"
+                     android:textColor="#FFFFFF"
+                     android:layout_marginStart="16dp"
+                     android:layout_weight="1"
+                     android:text="App Permissions" />
+
+                <ImageView
+                     android:layout_height="20dp"
+                     android:layout_width="20dp"
+                     android:src="@android:drawable/ic_media_play"
+                     app:tint="#444444" />
+
+            </LinearLayout>
+
+            <View
+                 android:layout_height="1dp"
+                 android:layout_width="match_parent"
+                 android:layout_marginBottom="16dp"
+                 android:background="#1A1A1A"
+                 android:layout_marginTop="16dp" />
+
+            <TextView
+                 android:layout_height="wrap_content"
+                 android:layout_width="wrap_content"
+                 android:layout_marginBottom="8dp"
+                 android:textSize="12sp"
+                 android:fontFamily="monospace"
+                 android:textColor="#00FF41"
+                 android:text="WHAT'S NEW" />
+
+            <TextView
+                 android:layout_height="wrap_content"
+                 android:layout_width="match_parent"
+                 android:background="#0D0D0D"
+                 android:clickable="true"
+                 android:padding="12dp"
+                 android:fontFamily="monospace"
+                 android:textSize="11sp"
+                 android:textColor="#CCCCCC"
+                 android:focusable="true"
+                 android:id="@+id/tv_whats_new_content"
+                 android:foreground="?android:attr/selectableItemBackground"
+                 android:text="> Java source encrypted\n> Hardware analytics enabled\n> System transitions optimized" />
+
+            <View
+                 android:layout_height="1dp"
+                 android:layout_width="match_parent"
+                 android:layout_marginBottom="16dp"
+                 android:background="#1A1A1A"
+                 android:layout_marginTop="24dp" />
 
             <Button
                  android:layout_height="wrap_content"
