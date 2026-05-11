@@ -1,6 +1,7 @@
 package com.example.myempty.vietcore
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
@@ -20,7 +21,7 @@ import kotlin.random.Random
 /**
  * MainActivity: VietCore 2026 Security Coordination Center.
  * Developer: Nguyen Minh Toi.
- * Fix: Lỗi Unresolved reference 'SettingsHandler' bằng cách gọi SettingsActivity.
+ * Fix: Giải quyết lỗi Unresolved reference bằng cách gọi Intent trực tiếp.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -79,8 +80,10 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                // FIX LỖI: Gọi trực tiếp SettingsActivity đã tạo thay vì SettingsHandler
-                SettingsActivity.showThemeSettings(this)
+                // FIX LỖI: Gọi Intent trực tiếp để mở SettingsActivity
+                // Thay thế cho SettingsActivity.showThemeSettings(this) để tránh lỗi Unresolved
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
                 true
             }
             R.id.nav_back -> {
@@ -237,7 +240,7 @@ class MainActivity : AppCompatActivity() {
             setTextColor(Color.parseColor("#888888"))
         }
         findViewById<TextView>(R.id.tv_version)?.apply {
-            text = "Core: VietCore 26.1.6-Beta"
+            text = "Core: VietCore 26.1.8-Beta"
             setTextColor(COLOR_SCANNING_CYAN)
         }
     }
