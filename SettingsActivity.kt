@@ -13,12 +13,10 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 /**
- * SettingsActivity: VietCore Configuration.
- * Đã fix lỗi Unresolved reference 'fontFamily' và tối ưu độ ổn định.
+ * SettingsActivity: VietCore Configuration Center.
+ * Đồng bộ hệ thống bảo mật 2 lớp: Nhật ký cập nhật & Chính sách pháp lý độc lập.
  */
 class SettingsActivity : AppCompatActivity() {
 
@@ -26,7 +24,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        // Toolbar Setup
+        // --- THIẾT LẬP TOOLBAR ---
         val toolbar = findViewById<Toolbar>(R.id.toolbar_settings)
         if (toolbar != null) {
             setSupportActionBar(toolbar)
@@ -35,47 +33,51 @@ class SettingsActivity : AppCompatActivity() {
             toolbar.setNavigationOnClickListener { finish() }
         }
 
-        // Ánh xạ các thành phần (Giữ nguyên toàn bộ ID mẫu)
+        // --- ÁNH XẠ CÁC THÀNH PHẦN (Cố định ID từ XML) ---
         val btnLight = findViewById<LinearLayout>(R.id.btn_light_mode)
         val btnDark = findViewById<LinearLayout>(R.id.btn_dark_mode)
         val radioLight = findViewById<RadioButton>(R.id.radio_light)
         val radioDark = findViewById<RadioButton>(R.id.radio_dark)
         val btnPermissions = findViewById<LinearLayout>(R.id.btn_manage_permissions)
+        val btnLegal = findViewById<LinearLayout>(R.id.btn_legal_policy)
         val tvWhatsNew = findViewById<TextView>(R.id.tv_whats_new_content)
         val btnApply = findViewById<Button>(R.id.btn_apply_settings)
         val btnRecovery = findViewById<Button>(R.id.btn_system_recovery)
 
-        // 1. Đồng bộ nội dung tóm tắt (Chỉ lấy các dòng có dấu >)
-        tvWhatsNew.text = getSummaryFromAssets()
-
-        // 2. Chức năng nhấn vào để xem toàn bộ ghi chú cập nhật
-        tvWhatsNew.setOnClickListener {
-            showFullUpdateLog()
+        // 1. Đồng bộ nội dung tóm tắt "What's New" (Layer 1)
+        tvWhatsNew?.text = getSummaryFromAssets()
+        tvWhatsNew?.setOnClickListener {
+            showSecureDialog("UPDATE_NOTES.txt", "#00FF41") // Hiện toàn bộ nhật ký
         }
 
-        // 3. Logic Theme (Kiểm tra và áp dụng)
+        // 2. Đồng bộ Chính sách pháp lý độc lập (Layer 2)
+        btnLegal?.setOnClickListener {
+            showSecureDialog("LEGAL_POLICY.txt", "#FFFFFF") // Hiện điều khoản pháp lý
+        }
+
+        // 3. Logic Theme (Kiểm tra trạng thái hệ thống)
         val currentMode = AppCompatDelegate.getDefaultNightMode()
         if (currentMode == AppCompatDelegate.MODE_NIGHT_YES) {
-            radioDark.isChecked = true
-            radioLight.isChecked = false
+            radioDark?.isChecked = true
+            radioLight?.isChecked = false
         } else {
-            radioLight.isChecked = true
-            radioDark.isChecked = false
+            radioLight?.isChecked = true
+            radioDark?.isChecked = false
         }
 
         btnLight?.setOnClickListener {
-            radioLight.isChecked = true
-            radioDark.isChecked = false
+            radioLight?.isChecked = true
+            radioDark?.isChecked = false
             updateTheme(AppCompatDelegate.MODE_NIGHT_NO)
         }
 
         btnDark?.setOnClickListener {
-            radioDark.isChecked = true
-            radioLight.isChecked = false
+            radioDark?.isChecked = true
+            radioLight?.isChecked = false
             updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
         }
 
-        // 4. Đồng bộ quyền hệ thống với AndroidManifest
+        // 4. Quản lý quyền hệ thống (Permission Sync)
         btnPermissions?.setOnClickListener {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.fromParts("package", packageName, null)
@@ -83,7 +85,7 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // 5. Nút Apply và Recovery (Giữ nguyên logic đóng Activity)
+        // 5. Kết thúc phiên làm việc (Apply & Recovery)
         btnApply?.setOnClickListener { finish() }
         btnRecovery?.setOnClickListener { finish() }
     }
@@ -93,8 +95,11 @@ class SettingsActivity : AppCompatActivity() {
         delegate.applyDayNight()
     }
 
-    // Hiển thị lớp ghi chú chi tiết (Phủ lên trên không ảnh hưởng cài đặt)
-    private fun showFullUpdateLog() {
+    /**
+     * showSecureDialog: Hiển thị nội dung từ assets trong một lớp Dialog bảo mật.
+     * Tối ưu cho màn hình OLED với nền True Black.
+     */
+    private fun showSecureDialog(fileName: String, colorHex: String) {
         val dialog = Dialog(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -104,19 +109,24 @@ class SettingsActivity : AppCompatActivity() {
 
         val scroll = ScrollView(this)
         val content = TextView(this).apply {
-            text = readAllNotesFromAssets()
-            setTextColor(Color.parseColor("#00FF41"))
-            // FIX LỖI: Sử dụng setTypeface thay vì fontFamily trực tiếp
+            text = try {
+                assets.open(fileName).bufferedReader().use { it.readText() }
+            } catch (e: Exception) { "> Access Denied: Kernel data secured." }
+            
+            setTextColor(Color.parseColor(colorHex))
             typeface = Typeface.MONOSPACE
             textSize = 12f
+            setLineSpacing(8f, 1f)
         }
 
         scroll.addView(content)
         layout.addView(scroll)
 
         dialog.setContentView(layout)
-        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.BLACK))
+        dialog.window?.let {
+            it.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            it.setBackgroundDrawable(ColorDrawable(Color.BLACK))
+        }
         dialog.show()
     }
 
@@ -125,12 +135,6 @@ class SettingsActivity : AppCompatActivity() {
             assets.open("UPDATE_NOTES.txt").bufferedReader().useLines { lines ->
                 lines.filter { it.trim().startsWith(">") }.take(3).joinToString("\n")
             }
-        } catch (e: Exception) { "> Loading system logs..." }
-    }
-
-    private fun readAllNotesFromAssets(): String {
-        return try {
-            assets.open("UPDATE_NOTES.txt").bufferedReader().use { it.readText() }
-        } catch (e: Exception) { "> Kernel data secured." }
+        } catch (e: Exception) { "> Loading VietCore Intelligence logs..." }
     }
 }
