@@ -22,12 +22,11 @@ import java.util.Locale
 
 /**
  * SettingsActivity: Trung tâm cấu hình VietCore.
- * Đồng bộ đa ngôn ngữ và bảo mật hệ thống.
+ * Sửa lỗi Unresolved reference và tối ưu hóa logic bảo mật.
  * Developer: Nguyen Minh Toi.
  */
 class SettingsActivity : AppCompatActivity() {
 
-    // --- QUAN TRỌNG: Gắn LocaleHelper để nhận diện ngôn ngữ hệ thống ---
     override fun attachBaseContext(newBase: Context) {
         val lang = LocaleHelper.getLanguage(newBase) ?: "en"
         super.attachBaseContext(LocaleHelper.setLocale(newBase, lang))
@@ -47,15 +46,23 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // --- 2. IDENTITY (DANH TÍNH) ---
+        // Sử dụng findViewById để tránh lỗi Unresolved reference
         val btnProfile = findViewById<LinearLayout>(R.id.btn_account_profile)
         val tvUsername = findViewById<TextView>(R.id.tv_username)
+        val ivEditProfile = findViewById<ImageView>(R.id.iv_edit_profile) // Nút bút chì từ XML của bạn
+
+        // Vô hiệu hóa click trên vùng chứa để thực hiện "Điểm chạm duy nhất"
+        btnProfile?.setOnClickListener(null)
+        btnProfile?.isClickable = false
+
         val savedName = getSharedPreferences("VietCore_Config", MODE_PRIVATE)
             .getString("saved_username", "Nguyen Minh Toi")
-        tvUsername.text = savedName
+        tvUsername?.text = savedName
 
-        btnProfile?.setOnClickListener {
+        // Logic chỉnh sửa: Chỉ kích hoạt qua biểu tượng bút chì
+        ivEditProfile?.setOnClickListener {
             val input = EditText(this).apply {
-                setText(tvUsername.text)
+                setText(tvUsername?.text)
                 setTextColor(Color.parseColor("#00FF41"))
                 backgroundTintList = ColorStateList.valueOf(Color.parseColor("#00FF41"))
                 typeface = Typeface.MONOSPACE
@@ -68,7 +75,7 @@ class SettingsActivity : AppCompatActivity() {
                 .setPositiveButton(getString(R.string.confirm_yes)) { _, _ ->
                     val newName = input.text.toString().trim()
                     if (newName.isNotEmpty()) {
-                        tvUsername.text = newName
+                        tvUsername?.text = newName
                         saveIdentity(newName)
                     }
                 }
@@ -84,7 +91,7 @@ class SettingsActivity : AppCompatActivity() {
 
         btnLanguage?.setOnClickListener { showLanguageDialog() }
 
-        // --- 4. THEME & UI (GIAO DIỆN) ---
+        // --- 4. THEME & UI ---
         val btnLight = findViewById<LinearLayout>(R.id.btn_light_mode)
         val btnDark = findViewById<LinearLayout>(R.id.btn_dark_mode)
         val radioLight = findViewById<RadioButton>(R.id.radio_light)
@@ -94,41 +101,37 @@ class SettingsActivity : AppCompatActivity() {
         btnLight?.setOnClickListener { updateTheme(AppCompatDelegate.MODE_NIGHT_NO) }
         btnDark?.setOnClickListener { updateTheme(AppCompatDelegate.MODE_NIGHT_YES) }
 
-        // --- 5. SYSTEM INTEL (GHI CHÚ BẢN CẬP NHẬT) ---
+        // --- 5. SYSTEM INTEL (NHẬT KÝ CẬP NHẬT) ---
         val tvWhatsNew = findViewById<TextView>(R.id.tv_whats_new_content)
         tvWhatsNew?.text = getSummaryFromAssets()
-        // Cho phép nhấn vào để xem chi tiết toàn bộ ghi chú
         tvWhatsNew?.setOnClickListener {
             showSecureDialog("UPDATE_NOTES.txt", "#00FF41")
         }
 
         // --- 6. LEGAL & PERMISSIONS (PHÁP LÝ & QUYỀN) ---
-        val btnLegal = findViewById<LinearLayout>(R.id.btn_legal_policy)
-        val btnPermissions = findViewById<LinearLayout>(R.id.btn_manage_permissions)
-        val btnIntegrity = findViewById<LinearLayout>(R.id.btn_integrity_check)
-        val btnClearCache = findViewById<LinearLayout>(R.id.btn_clear_cache)
-
-        btnLegal?.setOnClickListener {
+        findViewById<LinearLayout>(R.id.btn_legal_policy)?.setOnClickListener {
             val intent = Intent(this, LegalActivity::class.java).apply {
                 putExtra("FROM_SETTINGS", true)
             }
             startActivity(intent)
         }
 
-        btnPermissions?.setOnClickListener {
+        findViewById<LinearLayout>(R.id.btn_manage_permissions)?.setOnClickListener {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.fromParts("package", packageName, null)
             }
             startActivity(intent)
         }
 
-        btnIntegrity?.setOnClickListener { runIntegrityScan() }
-        btnClearCache?.setOnClickListener {
+        findViewById<LinearLayout>(R.id.btn_integrity_check)?.setOnClickListener { runIntegrityScan() }
+        
+        findViewById<LinearLayout>(R.id.btn_clear_cache)?.setOnClickListener {
             Toast.makeText(this, getString(R.string.toast_purge_success), Toast.LENGTH_SHORT).show()
         }
 
-        // --- 7. ACTIONS (APPLY & RECOVERY) ---
+        // --- 7. ACTIONS (LƯU & KHÔI PHỤC) ---
         findViewById<Button>(R.id.btn_apply_settings)?.setOnClickListener { finish() }
+        
         findViewById<Button>(R.id.btn_system_recovery)?.setOnClickListener {
             MaterialAlertDialogBuilder(this, R.style.VietCore_Terminal_Dialog)
                 .setTitle(getString(R.string.btn_recovery))
@@ -142,7 +145,8 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    // Hiển thị ghi chú chi tiết phong cách Terminal
+    // --- CÁC HÀM HỖ TRỢ GIỮ NGUYÊN LOGIC CŨ ---
+
     private fun showSecureDialog(fileName: String, colorHex: String) {
         val dialog = Dialog(this)
         val layout = LinearLayout(this).apply {
