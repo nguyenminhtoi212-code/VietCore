@@ -42,12 +42,9 @@
                  android:layout_width="match_parent"
                  android:background="#0D0D0D"
                  android:gravity="center_vertical"
-                 android:clickable="true"
                  android:padding="16dp"
                  android:orientation="horizontal"
-                 android:focusable="true"
-                 android:id="@+id/btn_account_profile"
-                 android:foreground="?android:attr/selectableItemBackground">
+                 android:id="@+id/btn_account_profile">
 
                 <com.google.android.material.imageview.ShapeableImageView
                      android:layout_height="60dp"
@@ -87,10 +84,14 @@
                 </LinearLayout>
 
                 <ImageView
-                     android:layout_height="20dp"
-                     android:layout_width="20dp"
+                     android:layout_height="40dp"
+                     android:layout_width="40dp"
                      android:src="@android:drawable/ic_menu_edit"
-                     app:tint="#444444" />
+                     android:scaleType="centerInside"
+                     android:background="?android:attr/selectableItemBackgroundBorderless"
+                     android:padding="10dp"
+                     app:tint="#00FF41"
+                     android:id="@+id/iv_edit_profile" />
 
             </LinearLayout>
 
@@ -163,7 +164,7 @@
                 <ImageView
                      android:layout_height="24dp"
                      android:layout_width="24dp"
-                     android:src="@android:drawable/ic_menu_sort_alphabetically"
+                     android:src="@drawable/ic_menu_sort_alphabetically"
                      app:tint="#FFCC00" />
 
                 <LinearLayout
@@ -219,6 +220,7 @@
                  android:layout_height="56dp"
                  android:layout_width="match_parent"
                  android:gravity="center_vertical"
+                 android:background="?android:attr/selectableItemBackground"
                  android:clickable="true"
                  android:paddingHorizontal="8dp"
                  android:focusable="true"
@@ -251,6 +253,7 @@
                  android:layout_height="56dp"
                  android:layout_width="match_parent"
                  android:gravity="center_vertical"
+                 android:background="?android:attr/selectableItemBackground"
                  android:clickable="true"
                  android:paddingHorizontal="8dp"
                  android:focusable="true"
@@ -344,7 +347,7 @@
                 <ImageView
                      android:layout_height="24dp"
                      android:layout_width="24dp"
-                     android:src="@android:drawable/ic_menu_delete"
+                     android:src="@drawable/ic_menu_delete"
                      app:tint="#00FFFF" />
 
                 <TextView
@@ -367,7 +370,7 @@
                 <ImageView
                      android:layout_height="24dp"
                      android:layout_width="24dp"
-                     android:src="@android:drawable/ic_menu_preferences"
+                     android:src="@drawable/ic_menu_preferences"
                      app:tint="#FF8800" />
 
                 <TextView
