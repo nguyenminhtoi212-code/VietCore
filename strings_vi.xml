@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VietCore</string>
+    <string name="version_label">Phiên bản: 26.1.12 Beta</string>
+
+    <string name="main_title">HỆ THỐNG VIETCORE</string>
+    <string name="settings_title">CÀI ĐẶT HỆ THỐNG</string>
+    <string name="header_identity">TRUY CẬP DANH TÍNH LÕI</string>
+    <string name="header_security">GIAO THỨC BẢO MẬT</string>
+    <string name="header_appearance">MÔ ĐUN GIAO DIỆN</string>
+    <string name="header_system_intel">DỮ LIỆU HỆ THỐNG</string>
+    <string name="header_localization">BẢN ĐỊA HÓA HỆ THỐNG</string>
+
+    <string name="status_authorized">Trạng thái: Đã xác thực</string>
+    <string name="status_unauthorized">Trạng thái: Chưa xác thực</string>
+    <string name="user_rank">Cấp bậc: Quản trị tối cao</string>
+    <string name="system_integrity">Toàn vẹn hệ thống: 100%</string>
+    <string name="kernel_status">Hạt nhân: Hoạt động</string>
+
+    <string name="item_permissions">Quyền hệ thống</string>
+    <string name="item_language">Ngôn ngữ giao diện</string>
+    <string name="item_light_mode">Chế độ sáng</string>
+    <string name="item_dark_mode">Chế độ tối</string>
+    <string name="item_integrity_scan">Quét tính toàn vẹn</string>
+    <string name="item_purge_cache">Xóa bộ nhớ đệm</string>
+    <string name="item_experimental">Phòng thí nghiệm</string>
+    <string name="item_terms">Điều khoản &amp; Điều kiện</string>
+
+    <string name="intel_logs_default">> Nguồn Java đã mã hóa\n> Đã bật phân tích phần cứng\n> Không có nhật ký</string>
+    <string name="log_scanning_integrity">> Đang quét tính toàn vẹn...</string>
+    <string name="log_root_detected">> CẢNH BÁO: Đã phát hiện Root!</string>
+    <string name="log_security_active">> Lõi bảo mật đang hoạt động.</string>
+
+    <string name="toast_applying">Đang áp dụng thay đổi hạt nhân...</string>
+    <string name="toast_purge_success">Đã xóa bộ nhớ đệm thành công.</string>
+    <string name="toast_scan_complete">Quét toàn vẹn hoàn tất.</string>
+    <string name="toast_error_permission">Lỗi: Quyền hệ thống bị từ chối.</string>
+
+    <string name="btn_apply">ÁP DỤNG THAY ĐỔI</string>
+    <string name="btn_recovery">KHÔI PHỤC HỆ THỐNG</string>
+    <string name="btn_scan_now">QUÉT NGAY</string>
+    <string name="btn_authorize">XÁC THỰC</string>
+    <string name="btn_exit">THOÁT BẢNG ĐIỀU KHIỂN</string>
+
+    <string name="dialog_select_language">Chọn ngôn ngữ hệ thống</string>
+    <string name="dialog_confirm_recovery">Xác nhận khôi phục hệ thống? Hành động này không thể hoàn tác.</string>
+    <string name="confirm_yes">XÁC NHẬN</string>
+    <string name="confirm_no">HỦY BỎ</string>
+    <string name="menu_settings">Cài đặt</string>
+    <string name="menu_exit">Thoát hệ thống</string>
+    <string name="dialog_exit_title">KẾT THÚC PHIÊN</string>
+    <string name="dialog_exit_msg">Bạn có chắc chắn muốn thoát VietCore Console?</string>
+
+    <string name="legal_title">PHÁP LÝ VÀ ĐIỀU KHOẢN</string>
+    <string name="legal_subtitle">Xem quyền hạn và tuân thủ hệ thống</string>
+    <string name="legal_content">> Đang khởi tạo Giao thức Pháp lý VietCore...\n> ID: VC-AUTH-2026\n> Dev: Nguyễn Minh Tới\n\n[ĐIỀU KHOẢN SỬ DỤNG]\n1. Hệ thống VietCore Intelligence yêu cầu quyền truy cập phần cứng để bảo mật.\n2. Mọi hành vi can thiệp trái phép vào Kernel sẽ bị khóa ID thiết bị.\n3. Dữ liệu được bảo mật bởi lá chắn RSA-4096.\n\n> Đang chờ xác nhận từ người dùng...</string>
+    <string name="cb_legal_agree">Tôi đồng ý với các điều khoản và giao thức bảo mật</string>
+    <string name="btn_decline">TỪ CHỐI</string>
+    <string name="btn_accept">CHẤP NHẬN</string>
+</resources>

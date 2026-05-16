@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VietCore</string>
+    <string name="version_label">Version: 26.1.12 Beta</string>
+
+    <string name="main_title">VIETCORE SYSTEM</string>
+    <string name="settings_title">SYSTEM SETTINGS</string>
+    
+    <string name="header_identity">CORE IDENTITY ACCESS</string>
+    <string name="header_security">SECURITY PROTOCOLS</string>
+    <string name="header_appearance">APPEARANCE MODULE</string>
+    <string name="header_system_intel">SYSTEM INTEL</string>
+    <string name="header_localization">SYSTEM LOCALIZATION</string>
+
+    <string name="status_authorized">Status: Authorized</string>
+    <string name="status_unauthorized">Status: Unauthorized</string>
+    <string name="user_rank">Rank: Overlord Admin</string>
+    <string name="system_integrity">System Integrity: 100%</string>
+    <string name="kernel_status">Kernel: Active</string>
+
+    <string name="item_permissions">System Permissions</string>
+    <string name="item_language">Interface Language</string>
+    <string name="item_light_mode">Light Mode</string>
+    <string name="item_dark_mode">Dark Mode</string>
+    <string name="item_integrity_scan">Run Integrity Scan</string>
+    <string name="item_purge_cache">Purge System Cache</string>
+    <string name="item_experimental">Experimental Labs</string>
+    <string name="item_terms">Global Terms &amp; Conditions</string>
+
+    <string name="intel_logs_default">> Java source encrypted\n> Hardware analytics enabled\n> No logs recorded</string>
+    <string name="log_scanning_integrity">> Scanning system integrity...</string>
+    <string name="log_root_detected">> WARNING: Root access detected!</string>
+    <string name="log_security_active">> Security core is active.</string>
+
+    <string name="toast_applying">Applying kernel changes...</string>
+    <string name="toast_purge_success">System cache purged successfully.</string>
+    <string name="toast_scan_complete">Integrity scan complete.</string>
+    <string name="toast_error_permission">Error: System permissions not granted.</string>
+
+    <string name="btn_apply">APPLY CHANGES</string>
+    <string name="btn_recovery">SYSTEM RECOVERY</string>
+    <string name="btn_scan_now">SCAN NOW</string>
+    <string name="btn_authorize">AUTHORIZE</string>
+    <string name="btn_exit">EXIT CONSOLE</string>
+
+    <string name="dialog_select_language">Select system language</string>
+    <string name="dialog_confirm_recovery">Confirm system recovery? This action cannot be undone.</string>
+    <string name="confirm_yes">CONFIRM</string>
+    <string name="confirm_no">CANCEL</string>
+
+    <string name="menu_settings">Settings</string>
+    <string name="menu_exit">Exit System</string>
+    <string name="dialog_exit_title">TERMINATE SESSION</string>
+    <string name="dialog_exit_msg">Are you sure you want to exit VietCore Console?</string>
+
+    <string name="legal_title">LEGAL AND TERMS OF USE</string>
+    <string name="legal_subtitle">View authority and system compliance</string>
+    <string name="legal_content">> Initializing VietCore Legal Protocol...\n> ID: VC-AUTH-2026\n> Dev: Nguyen Minh Toi\n\n[TERMS OF USE]\n1. VietCore Intelligence requires hardware access for security.\n2. Any unauthorized interference with the Kernel will lock the device ID.\n3. Data is secured by RSA-4096 shielding.\n\n> Waiting for user confirmation...</string>
+    <string name="cb_legal_agree">I agree to the terms and security protocols</string>
+    <string name="btn_decline">DECLINE</string>
+    <string name="btn_accept">ACCEPT</string>
+</resources>

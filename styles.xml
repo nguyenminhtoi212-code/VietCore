@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="CircleAppearance">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="Theme.VietCore" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">#00FF41</item>
+        <item name="colorPrimaryVariant">#000000</item>
+        <item name="colorOnPrimary">#000000</item>
+        
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
+        <item name="android:statusBarColor">#000000</item>
+        
+        <item name="materialAlertDialogTheme">@style/VietCore_Terminal_Dialog</item>
+    </style>
+
+    <style name="ThemeOverlay.AppCompat.Dark.ActionBar" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="android:textColorPrimary">#00FF41</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+    <style name="VietCore_Terminal_Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="android:background">#0D0D0D</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#00FF41</item>
+        <item name="buttonBarPositiveButtonStyle">@style/VietCore.Dialog.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/VietCore.Dialog.Button</item>
+    </style>
+
+    <style name="VietCore.Dialog.Button" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">#00FF41</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.VietCore.Switch" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="android:thumbTint">#00FF41</item>
+        <item name="trackTint">#333333</item>
+    </style>
+
+</resources>
