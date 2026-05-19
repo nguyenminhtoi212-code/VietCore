@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     android:layout_height="match_parent"
+     android:layout_width="match_parent"
+     android:background="#020617"
+     android:fitsSystemWindows="true">
+
+    <TextView
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         app:layout_constraintTop_toTopOf="parent"
+         android:layout_margin="20dp"
+         app:layout_constraintStart_toStartOf="parent"
+         android:fontFamily="monospace"
+         android:textSize="10sp"
+         android:textColor="#00FF41"
+         android:id="@+id/tv_radar_title"
+         android:text="@string/radar_title" />
+
+    <ImageView
+         android:layout_height="32dp"
+         android:layout_width="32dp"
+         android:src="@android:drawable/ic_menu_manage"
+         android:background="?attr/selectableItemBackgroundBorderless"
+         android:clickable="true"
+         app:layout_constraintTop_toTopOf="parent"
+         android:layout_margin="16dp"
+         android:padding="6dp"
+         app:tint="#00FF41"
+         app:layout_constraintEnd_toEndOf="parent"
+         android:id="@+id/btn_quick_settings" />
+
+    <FrameLayout
+         android:layout_height="320dp"
+         android:layout_width="320dp"
+         android:background="@android:color/transparent"
+         app:layout_constraintTop_toTopOf="parent"
+         app:layout_constraintStart_toStartOf="parent"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintBottom_toBottomOf="parent"
+         android:id="@+id/radar_container">
+
+        <View
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:background="@drawable/radar_graphic_circle"
+             android:id="@+id/view_radar_sweep" />
+
+        <FrameLayout
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:background="@android:color/transparent"
+             android:clipChildren="false"
+             android:clipToPadding="false"
+             android:id="@+id/container_human_dots">
+
+        </FrameLayout>
+
+        <FrameLayout
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:background="@android:color/transparent"
+             android:clipChildren="false"
+             android:clipToPadding="false"
+             android:id="@+id/container_tech_dots">
+
+        </FrameLayout>
+
+        <ImageView
+             android:layout_height="12dp"
+             android:layout_width="12dp"
+             android:visibility="invisible"
+             android:src="@drawable/ic_anomaly_dot"
+             android:id="@+id/img_anomaly"
+             android:layout_gravity="center" />
+
+        <View
+             android:layout_height="10dp"
+             android:layout_width="10dp"
+             android:visibility="invisible"
+             android:layout_marginEnd="60dp"
+             android:background="@android:color/holo_green_light"
+             android:layout_marginTop="40dp"
+             android:id="@+id/dot_subsurface"
+             android:layout_gravity="center" />
+
+        <View
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:visibility="gone"
+             android:background="#1A00FF41"
+             android:id="@+id/view_noise_overlay" />
+
+    </FrameLayout>
+
+    <TextView
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         app:layout_constraintStart_toStartOf="parent"
+         android:fontFamily="monospace"
+         android:textSize="9sp"
+         app:layout_constraintEnd_toEndOf="parent"
+         android:textColor="#FF4444"
+         android:layout_marginTop="12dp"
+         app:layout_constraintTop_toBottomOf="@id/radar_container"
+         android:id="@+id/tv_connection_status"
+         android:text="@string/status_disconnected" />
+
+    <LinearLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:layout_marginBottom="40dp"
+         android:gravity="center"
+         android:orientation="horizontal"
+         app:layout_constraintBottom_toTopOf="@+id/tv_status_footer"
+         android:id="@+id/layout_controls">
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:padding="8dp"
+             android:fontFamily="monospace"
+             android:textSize="10sp"
+             android:textColor="#FFFFFF"
+             android:id="@+id/tv_zoom_control"
+             android:text="@string/zoom_control" />
+
+        <Button
+             android:layout_height="40dp"
+             android:layout_width="wrap_content"
+             android:layout_marginHorizontal="20dp"
+             android:textSize="10sp"
+             android:fontFamily="monospace"
+             android:backgroundTint="#0088FF"
+             android:id="@+id/btn_add_radar"
+             android:text="@string/btn_add_radar" />
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:fontFamily="monospace"
+             android:textSize="10sp"
+             android:textColor="#FFFFFF"
+             android:text="@string/scale_text" />
+
+    </LinearLayout>
+
+    <TextView
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:background="#0D0D0D"
+         android:gravity="center"
+         android:padding="10dp"
+         android:fontFamily="monospace"
+         android:textSize="8sp"
+         android:textColor="#888888"
+         app:layout_constraintBottom_toBottomOf="parent"
+         android:id="@+id/tv_status_footer"
+         android:text="@string/status_footer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

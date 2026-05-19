@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#020617"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:id="@+id/header_dev"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#0B0F14"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="20dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="@string/dev_lab_title"
+                android:textColor="#00FF41"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="@string/dev_lab_build"
+                android:textColor="#888888"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_dev_menu"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/btn_back_home"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="#FFA500" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/footer_warning"
+        app:layout_constraintTop_toBottomOf="@id/header_dev">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="monospace"
+                android:text="@string/header_kernel_tweaks"
+                android:textColor="#0088FF"
+                android:textSize="13sp" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_bypass_sig"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="@string/switch_bypass_sig"
+                android:textColor="#FFFFFF"
+                app:thumbTint="#00FF41"
+                app:trackTint="#3300FF41" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_memory_scan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="@string/switch_memory_scan"
+                android:textColor="#FFFFFF"
+                app:thumbTint="#00FF41"
+                app:trackTint="#3300FF41" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="24dp"
+                android:background="#1E293B" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="monospace"
+                android:text="@string/header_ai_intel"
+                android:textColor="#0088FF"
+                android:textSize="13sp" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_ai_predict"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="@string/switch_ai_predict"
+                android:textColor="#FFFFFF"
+                app:thumbTint="#00FF41"
+                app:trackTint="#3300FF41" />
+
+            <Button
+                android:id="@+id/btn_run_stress_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:backgroundTint="#EF4444"
+                android:fontFamily="monospace"
+                android:text="@string/btn_stress_test"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_close_dev_mode"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="monospace"
+                android:text="@string/btn_close_dev_mode"
+                android:textColor="#FFA500"
+                android:textSize="11sp"
+                app:icon="@android:drawable/ic_menu_revert"
+                app:iconGravity="textStart"
+                app:iconTint="#FFA500" />
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/footer_warning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1A0000"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="@string/footer_dev_warning"
+        android:textColor="#FF4444"
+        android:textSize="9sp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

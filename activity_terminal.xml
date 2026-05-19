@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     android:layout_height="match_parent"
+     android:layout_width="match_parent"
+     android:background="#020617">
+
+    <LinearLayout
+         android:id="@+id/control_panel"
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:background="#050A18"
+         android:gravity="center_vertical"
+         app:layout_constraintTop_toTopOf="parent"
+         android:paddingVertical="8dp"
+         android:orientation="horizontal"
+         android:paddingHorizontal="15dp">
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:fontFamily="monospace"
+             android:textSize="10sp"
+             android:textColor="#00FF41"
+             android:text="@string/terminal_sys_tag" />
+
+        <View
+             android:layout_height="1dp"
+             android:layout_width="0dp"
+             android:layout_weight="1" />
+
+        <ImageView
+             android:id="@+id/btn_show_keyboard"
+             android:layout_height="20dp"
+             android:layout_width="20dp"
+             android:layout_marginEnd="15dp"
+             android:src="@android:drawable/ic_menu_edit"
+             app:tint="#00FF41" />
+
+        <ImageView
+             android:id="@+id/btn_terminal_exit"
+             android:layout_height="20dp"
+             android:layout_width="20dp"
+             android:src="@android:drawable/ic_lock_power_off"
+             app:tint="#FF4444" />
+
+    </LinearLayout>
+
+    <ScrollView
+         android:id="@+id/scroll_terminal"
+         android:layout_height="0dp"
+         android:layout_width="match_parent"
+         android:padding="12dp"
+         android:clipToPadding="false"
+         app:layout_constraintBottom_toTopOf="@+id/input_layout"
+         app:layout_constraintTop_toBottomOf="@id/control_panel">
+
+        <TextView
+             android:id="@+id/tv_terminal_output"
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:fontFamily="monospace"
+             android:textSize="11sp"
+             android:textColor="#00FF41"
+             android:lineSpacingExtra="4dp"
+             android:text="@string/terminal_init_msg" />
+
+    </ScrollView>
+
+    <LinearLayout
+         android:id="@+id/input_layout"
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:background="#0D0D0D"
+         android:gravity="center_vertical"
+         android:orientation="horizontal"
+         android:paddingBottom="25dp"
+         app:layout_constraintBottom_toBottomOf="parent"
+         android:paddingHorizontal="10dp"
+         android:paddingTop="10dp">
+
+        <TextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:fontFamily="monospace"
+             android:textSize="12sp"
+             android:textColor="#00FF41"
+             android:text="@string/terminal_prompt" />
+
+        <EditText
+             android:id="@+id/et_terminal_input"
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:imeOptions="actionDone"
+             android:background="@null"
+             android:hint="@string/terminal_hint"
+             android:textColorHint="#333333"
+             android:fontFamily="monospace"
+             android:textSize="12sp"
+             android:textColor="#FFFFFF"
+             android:maxLines="4"
+             android:inputType="textMultiLine" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
