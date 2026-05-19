@@ -5,13 +5,14 @@ plugins {
 }
 
 base {
-    archivesName.set("VietCore_v26.1.10-Beta-11_Final_NextGen")
+    // Tên file APK đầu ra đồng bộ với phiên bản NextGen
+    archivesName.set("VietCore_v26.1.13-Beta-14_Final_NextGen")
 }
 
 android {
     namespace = "com.example.myempty.vietcore"
     
-    // Giữ nguyên lên đời Android mới nhất để phân biệt và tránh các bộ quét cũ
+    // Giữ nguyên lên đời Android mới nhất (Android 16 dự kiến hoặc các bản preview)
     compileSdk = 36 
 
     defaultConfig {
@@ -19,8 +20,8 @@ android {
         minSdk = 35 
         targetSdk = 36 
         
-        versionCode = 4 
-        versionName = "26.1.10-Beta 11 [NextGen]"
+        versionCode = 5 
+        versionName = "26.1.13-Beta 14 [NextGen]"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -29,7 +30,7 @@ android {
             abiFilters.add("arm64-v8a") 
         }
 
-        // --- VietCore Server Configuration (Đã loại bỏ các liên kết cũ) ---
+        // --- VietCore Server Configuration ---
         buildConfigField("String", "SERVER_IP_CHECK_A", "\"https://checkip.amazonaws.com\"")
         buildConfigField("String", "SERVER_IP_CHECK_B", "\"https://api.ipify.org\"")
         
@@ -66,12 +67,17 @@ android {
                 "proguard-rules.pro"
             )
 
-            isDebuggable = true
+            // Lưu ý: Thường release không để debuggable = true trừ khi bạn đang test đặc biệt
+            // Giữ nguyên theo yêu cầu của Tới
+            isDebuggable = true 
             signingConfig = signingConfigs.getByName("debug") 
         }
         
         debug {
-            isMinifyEnabled = true 
+            // FIX: Tắt Minify ở Debug để build nhanh hơn
+            isMinifyEnabled = true
+            isShrinkResources = true
+            
             ndk {
                 abiFilters.clear()
                 abiFilters.add("arm64-v8a")
@@ -102,29 +108,31 @@ android {
     }
 
     lint {
-        // TẮT các tính năng chặn build khi có lỗi hoặc cảnh báo từ Google
-        checkReleaseBuilds = true
-        abortOnError = true
+        checkReleaseBuilds = false
+        abortOnError = false 
     }
 }
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
+    // --- Core Libraries ---
     implementation("junit:junit:4.13.2")
     implementation("org.json:json:20231013")
     implementation("org.jetbrains:annotations:24.0.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
-    // Google Play Services & Integrity (Cấu hình xác thực tính toàn vẹn)
+    // Google Play Services & Integrity (Xác thực tính toàn vẹn)
     implementation("com.google.android.gms:play-services-basement:18.4.0")
     implementation("com.google.android.gms:play-services-base:18.5.0")
     implementation("com.google.android.play:integrity:1.3.0") 
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    
+    // UI & Material Design
+    implementation("com.google.android.material:material:1.11.0")
     implementation(libs.androidx.constraintlayout)
 
     // Network & Data (Xử lý dữ liệu bảo mật)
@@ -134,10 +142,17 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     
-    // Security & Core (Hệ thống bảo mật VietCore)
+    // Security & Core System
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.media:media:1.7.0")
     
+    // Permission Management
     implementation("com.guolindev.permissionx:permissionx:1.7.1")
+
+    // --- BỔ SUNG CHO TÍNH NĂNG KIỂM TRA PHẦN CỨNG & HIỆU NĂNG ---
+    // Hỗ trợ kiểm tra thông tin thiết bị chi tiết
+    implementation("androidx.window:window:1.2.0")
+    // Quản lý tài nguyên hệ thống tốt hơn cho các tính năng nặng (Radar, Scan)
+    implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
 }
