@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VietCore</string>
+    <string name="version_label">Version: 26.1.13 Beta</string>
+    <string name="main_title">VIETCORE SYSTEM</string>
+    <string name="settings_title">SYSTEM SETTINGS</string>
+    
+    <string name="terminal_sys_tag">[VIETCORE_OS] </string>
+    <string name="terminal_init_msg">[SYSTEM] Initializing core modules...</string>
+    <string name="terminal_prompt">toi@vietcore:~$ </string>
+    <string name="terminal_hint">enter command...</string>
+    <string name="terminal_exit_title">TERMINAL SESSION</string>
+    <string name="terminal_exit_msg">Do you want to terminate the session and return to the main interface?</string>
+    <string name="terminal_btn_exit">EXIT</string>
+    <string name="terminal_btn_cancel">CANCEL</string>
+    <string name="log_keyboard_requested">Interface: Virtual keyboard focus requested.</string>
+    <string name="log_session_reset">[SYSTEM] Console session has been reset.</string>
+    <string name="log_awaiting">Awaiting instructions...</string>
+    <string name="log_exec_proc">EXECUTE: Processing program \'%1$s\'...</string>
+    <string name="terminal_status_output">VietCore OS: STABLE | Kernel: v1.0.2-2026</string>
+
+    <string name="header_identity">CORE IDENTITY ACCESS</string>
+    <string name="header_security">SECURITY PROTOCOLS</string>
+    <string name="header_appearance">INTERFACE MODULE</string>
+    <string name="header_system_intel">INTELLIGENCE DATA</string>
+    <string name="header_localization">SYSTEM LOCALIZATION</string>
+
+    <string name="status_authorized">Status: Authorized</string>
+    <string name="status_unauthorized">Status: Unauthorized</string>
+    <string name="user_rank">Rank: Supreme Administrator</string>
+    <string name="system_integrity">System Integrity: 100%</string>
+    <string name="kernel_status">Kernel: Active</string>
+    <string name="status_enabled">ENABLED</string>
+    <string name="status_disabled">DISABLED</string>
+    <string name="status_locked">TARGET LOCKED</string>
+    <string name="entity_human">HUMAN SIGNATURE</string>
+    <string name="entity_alien">EXTRATERRESTRIAL ENTITY</string>
+    <string name="entity_ghost">SUPERNATURAL ENTITY</string>
+    <string name="infrared_active">INFRARED SENSOR: ACTIVE</string>
+
+    <string name="item_permissions">System Permissions</string>
+    <string name="item_language">Interface Language</string>
+    <string name="item_light_mode">Light Mode</string>
+    <string name="item_dark_mode">Dark Mode</string>
+    <string name="item_integrity_scan">Integrity Scan</string>
+    <string name="item_purge_cache">Purge System Cache</string>
+    <string name="item_experimental">Experimental Laboratory</string>
+    <string name="item_terms">Terms &amp; General Conditions</string>
+    
+    <string name="item_quantum_radar">Quantum Fusion Radar</string>
+    <string name="radar_title">QUANTUM FUSION RADAR v2.0</string>
+    <string name="radar_desc_active">Analyzing multi-dimensional entities...</string>
+    <string name="toast_radar_enabled">Quantum Radar protocol has been activated.</string>
+    <string name="btn_add_radar">SCAN HARDWARE</string>
+    <string name="zoom_control">ZOOM: x1.0</string>
+    <string name="scale_text">RANGE: 500m</string>
+    <string name="status_footer">VietCore Secure Link | Hardware Verified</string>
+    <string name="status_disconnected">STATUS: EXTERNAL RADAR NOT FOUND</string>
+    <string name="status_searching">STATUS: SEARCHING VIA BLE...</string>
+    <string name="status_connected">STATUS: CONNECTED TO %s</string>
+    <string name="device_unknown">UNKNOWN RADAR DEVICE</string>
+    <string name="access_denied">> Access Denied: Quantum Radar is disabled</string>
+    <string name="toast_deactivating">> Deactivating Quantum Radar core...</string>
+
+    <string name="intel_logs_default">> Encrypted Java Source\n> Hardware Analysis Enabled\n> No logs recorded</string>
+    <string name="log_scanning_integrity">> Scanning system integrity...</string>
+    <string name="log_root_detected">> WARNING: Root access detected!</string>
+    <string name="log_security_active">> Security core is active.</string>
+    <string name="log_hardware_scan">> Scanning hardware fingerprint...</string>
+    <string name="log_hardware_invalid">> WARNING: Invalid device detected!</string>
+
+    <string name="toast_applying">Applying Kernel changes...</string>
+    <string name="toast_purge_success">System cache purged successfully.</string>
+    <string name="toast_scan_complete">Integrity scan completed.</string>
+    <string name="toast_error_permission">Error: System permission denied.</string>
+    <string name="toast_stress_test_init">CRITICAL: System Stress Test Initialized...</string>
+
+    <string name="btn_apply">APPLY CHANGES</string>
+    <string name="btn_recovery">SYSTEM RECOVERY</string>
+    <string name="btn_scan_now">SCAN NOW</string>
+    <string name="btn_authorize">AUTHORIZE</string>
+    <string name="btn_exit">EXIT CONSOLE</string>
+
+    <string name="dialog_select_language">Select System Language</string>
+    <string name="dialog_confirm_recovery">Confirm system recovery? This action cannot be undone.</string>
+    <string name="confirm_yes">CONFIRM</string>
+    <string name="confirm_no">CANCEL</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_exit">Exit System</string>
+    <string name="dialog_exit_title">TERMINATE SESSION</string>
+    <string name="dialog_exit_msg">Are you sure you want to exit VietCore Console?</string>
+
+    <string name="legal_title">LEGAL AND TERMS OF USE</string>
+    <string name="legal_subtitle">Review authorization and system compliance</string>
+    <string name="legal_content">> Initializing VietCore legal protocol...\n> ID: VC-AUTH-2026\n> Developer: Nguyen Minh Toi\n\n[TERMS OF USE]\n1. VietCore Intelligence requires hardware access for security purposes.\n2. Any unauthorized tampering with the Kernel will lock the device ID.\n3. Data is protected by RSA-4096 security layers.\n\n> Awaiting user confirmation...</string>
+    <string name="cb_legal_agree">I agree to the terms and security protocols</string>
+    <string name="btn_decline">DECLINE</string>
+    <string name="btn_accept">ACCEPT</string>
+    
+    <string name="menu_title">RADAR CONTROL PANEL</string>
+    <string name="menu_deactivate">Deactivate Radar System</string>
+    <string name="menu_info">Quantum Intelligence Info</string>
+    <string name="menu_cancel">Dismiss</string>
+    <string name="info_toast">VietCore Intelligence Radar v3.1</string>
+
+    <string name="dev_lab_title">VIETCORE DEVELOPMENT LABORATORY</string>
+    <string name="dev_lab_build">Internal Experimental Build: v26.Q2</string>
+    <string name="header_kernel_tweaks">[ KERNEL TWEAKS ]</string>
+    <string name="header_ai_intel">[ ARTIFICIAL INTELLIGENCE ]</string>
+    <string name="switch_bypass_sig">Bypass App Signature Verification</string>
+    <string name="switch_memory_scan">Deep Hex Memory Scan</string>
+    <string name="switch_ai_predict">Neural Integrity Prediction</string>
+    <string name="btn_stress_test">EXECUTE SYSTEM STRESS TEST</string>
+    <string name="btn_back_home">Return to Main Console</string>
+    <string name="btn_close_dev_mode">[ RETURN TO MAIN INTERFACE ]</string>
+    <string name="footer_dev_warning">NOTE: Activating experimental features may destabilize the VietCore Kernel. For authorized developers only.</string>
+
+    <string name="dev_name_label">Developer: Nguyen Minh Toi</string>
+    <string name="error_icon_text">[ ! ]</string>
+    <string name="error_code_internal">INTERNAL_ERROR: 0000</string>
+    <string name="error_lockdown_timer">SHIELD LOCKDOWN IN: %1$.1fs</string>
+
+    <string name="violation_hardware_restriction">HARDWARE RESTRICTION: MOBILE ONLY</string>
+    <string name="violation_developer_options">DEVELOPER OPTIONS RESTRICTED</string>
+    <string name="violation_identity_breach">APK IDENTITY BREACH</string>
+    <string name="violation_logic_tampered">CORE LOGIC TAMPERED (DEX)</string>
+    <string name="violation_resource_breach">RESOURCE INTEGRITY BREACH</string>
+    <string name="violation_remote_exploit">REMOTE CONTROL EXPLOIT DETECTED</string>
+    <string name="violation_audio_surveillance">UNAUTHORIZED AUDIO SURVEILLANCE DETECTED</string>
+    <string name="violation_hacker_tools">HACKER / MANIPULATION TOOLS DETECTED</string>
+    <string name="violation_wireless_debugging">WIRELESS DEBUGGING ACTIVE</string>
+    <string name="violation_unsecure_env">UNSECURE ENVIRONMENT (ROOT/VM)</string>
+    <string name="violation_hardware_breach">UNLOCKED BOOTLOADER / CUSTOM ROM</string>
+    <string name="violation_unknown">UNKNOWN CRITICAL VIOLATION</string>
+
+    <string name="status_omnis_offline">OMNIS: OFFLINE MODE ACTIVE</string>
+    <string name="log_integrity_breach">INTEGRITY BREACH: %1$s</string>
+
+    <string name="radar_detected_entities">> DETECTED: %1$d HUMAN | %2$d TECH UNITS</string>
+    <string name="radar_scanning_empty">> SCANNING: NO ENTITIES IN RANGE</string>
+    <string name="radar_layer_subsurface">SUBSURFACE</string>
+    <string name="radar_layer_external">EXTERNAL</string>
+    <string name="radar_layer_quantum">QUANTUM</string>
+</resources>
