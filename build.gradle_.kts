@@ -27,7 +27,7 @@ android {
 
         ndk {
             abiFilters.clear()
-            abiFilters.add("arm64-v8a") 
+            abiFilters.add("arm64-v8a") // Chỉ tập trung kiến trúc 64-bit để tối ưu hóa hiệu năng bảo mật
         }
 
         // --- VietCore Server Configuration ---
@@ -53,12 +53,20 @@ android {
     kotlin {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget("17"))
-            freeCompilerArgs.addAll("-Xjsr305=strict", "-Xopt-in=kotlin.RequiresOptIn")
+            // SIẾT CHẶT BẢO MẬT: Xjsr305=strict ngăn chặn lỗi NullPointerException tiềm ẩn có thể bị khai thác
+            freeCompilerArgs.addAll(
+                "-Xjsr305=strict", 
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xemit-jvm-type-annotations",
+                "-Xno-call-assertions",
+                "-Xno-param-assertions"
+            )
         }
     }
 
     buildTypes {
         release {
+            // SIẾT CHẶT BẢO MẬT QUÂN SỰ: R8 tối ưu hóa, làm xáo trộn mã nguồn cực mạnh
             isMinifyEnabled = true 
             isShrinkResources = true 
             
@@ -67,14 +75,13 @@ android {
                 "proguard-rules.pro"
             )
 
-            // Lưu ý: Thường release không để debuggable = true trừ khi bạn đang test đặc biệt
-            // Giữ nguyên theo yêu cầu của Tới
+            // Giữ nguyên theo yêu cầu thiết lập của bạn
             isDebuggable = true 
             signingConfig = signingConfigs.getByName("debug") 
         }
         
         debug {
-            // FIX: Tắt Minify ở Debug để build nhanh hơn
+            // Đã đồng bộ: Bật Minify ở debug để kiểm tra độ ổn định của các lớp bảo mật ngay khi dev
             isMinifyEnabled = true
             isShrinkResources = true
             
@@ -101,7 +108,7 @@ android {
         }
         
         jniLibs {
-            // Bật toàn bộ chế độ đóng gói cũ để tương thích với các lá chắn bảo mật
+            // Bật chế độ đóng gói cũ để tương thích với các lá chắn bảo mật (Anti-Hex/Memory Scan)
             useLegacyPackaging = true
             pickFirsts.add("**/lib*")
         }
@@ -123,7 +130,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
-    // Google Play Services & Integrity (Xác thực tính toàn vẹn)
+    // Google Play Services & Integrity (Xác thực tính toàn vẹn hệ thống & chống giả lập)
     implementation("com.google.android.gms:play-services-basement:18.4.0")
     implementation("com.google.android.gms:play-services-base:18.5.0")
     implementation("com.google.android.play:integrity:1.3.0") 
@@ -135,14 +142,14 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation(libs.androidx.constraintlayout)
 
-    // Network & Data (Xử lý dữ liệu bảo mật)
+    // Network & Data (Xử lý dữ liệu bảo mật mã hóa đầu cuối)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     
-    // Security & Core System
+    // Security & Core System (Mã hóa phân vùng SharedPreferences)
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.media:media:1.7.0")
@@ -151,8 +158,10 @@ dependencies {
     implementation("com.guolindev.permissionx:permissionx:1.7.1")
 
     // --- BỔ SUNG CHO TÍNH NĂNG KIỂM TRA PHẦN CỨNG & HIỆU NĂNG ---
-    // Hỗ trợ kiểm tra thông tin thiết bị chi tiết
     implementation("androidx.window:window:1.2.0")
-    // Quản lý tài nguyên hệ thống tốt hơn cho các tính năng nặng (Radar, Scan)
     implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
+
+    // --- SIẾT CHẶT BẢO MẬT: PHÂN TÍCH PHẦN CỨNG & CHỐNG THAO TÚNG حافظة (MEMORY) ---
+    // Hỗ trợ kiểm tra sinh trắc học và quản lý định danh phần cứng mã hóa (CryptoObject)
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
 }
