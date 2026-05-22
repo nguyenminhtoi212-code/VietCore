@@ -4,18 +4,16 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.CAMERA" />
-    
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-    
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
@@ -27,19 +25,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:hardwareAccelerated="true"
-        android:hasFragileUserData="true"
         tools:targetApi="35">
 
         <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
-        <meta-data
-            android:name="vietcore.intelligence.LICENSE"
-            android:value="AUTONOMOUS_SYSTEM_2026_FREE" />
+            android:name="vietcore.intel.license.KEY"
+            android:value="SYSTEM_2026_STANDALONE_VALIDATED" />
 
-        <!-- 1. CỔNG KIỂM SOÁT PHÁP LÝ (LAUNCHER CHÍNH) -->
         <activity
-            android:name=".LegalActivity"
+            android:name=".SplashActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar.FullScreen">
@@ -49,41 +42,17 @@
             </intent-filter>
         </activity>
 
-        <!-- 2. MÀN HÌNH CHÀO (CHUYỂN TIẾP SAU KHI ACCEPT) -->
-        <activity
-            android:name=".SplashActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.NoActionBar.FullScreen" />
+        <activity android:name=".MainActivity" android:exported="false" android:process=":omnis_core" android:screenOrientation="portrait" android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity android:name=".SettingsActivity" android:exported="false" android:process=":omnis_core" android:screenOrientation="portrait" />
+        <activity android:name=".TerminalActivity" android:exported="false" android:process=":omnis_core" android:screenOrientation="portrait" />
+        <activity android:name=".RadarActivity" android:exported="false" android:process=":omnis_core" android:screenOrientation="portrait" />
+        <activity android:name=".LabsActivity" android:exported="false" android:process=":omnis_core" android:screenOrientation="portrait" />
 
-        <!-- 3. GIAO DIỆN CHÍNH -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"
-            android:process=":omnis_core"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <service android:name=".SecuritySyncService" android:enabled="true" android:exported="false" android:foregroundServiceType="dataSync" />
+        <service android:name=".AiModerationService" android:enabled="true" android:exported="false" />
+        <service android:name=".AdBlockerService" android:enabled="true" android:exported="false" />
 
-        <!-- 4. TRUNG TÂM CÀI ĐẶT -->
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false"
-            android:label="Settings"
-            android:process=":omnis_core"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
-
-        <!-- DỊCH VỤ VÀ BỘ THU HỆ THỐNG -->
-        <service
-            android:name=".SecuritySyncService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-
-        <receiver
-            android:name=".SecurityBootReceiver"
-            android:exported="false">
+        <receiver android:name=".SecurityBootReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
