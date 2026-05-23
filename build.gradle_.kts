@@ -1,8 +1,12 @@
+import org.ajoberstar.grgit.Grgit
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     kotlin("plugin.serialization") version "1.9.22"
     id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+    // Plugin hỗ trợ Git trong Gradle
+    id("org.ajoberstar.grgit") version "5.2.2"
 }
 
 base {
@@ -111,16 +115,6 @@ android {
     }
 }
 
-// Bổ sung cấu hình kết nối GitHub/Git
-tasks.register("gitVersionInfo") {
-    group = "versioning"
-    description = "Sync VietCore version with GitHub deployment."
-    doLast {
-        println("VietCore Sync: Checking remote origin...")
-        // Tích hợp logic kiểm tra branch tại đây
-    }
-}
-
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
@@ -138,6 +132,10 @@ dependencies {
     // --- Networking ---
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // --- BỔ SUNG: DỊCH VỤ GITHUB API ---
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("org.kohsuke:github-api:1.318") 
 
     // Google Play Services & Integrity
     implementation("com.google.android.gms:play-services-basement:18.4.0")
@@ -165,4 +163,19 @@ dependencies {
     // Hardware & Utilities
     implementation("androidx.window:window:1.2.0")
     implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
+}
+
+// Cấu hình kết nối kho lưu trữ GitHub
+tasks.register("pushToGitHub") {
+    group = "versioning"
+    description = "Đẩy bản build mới lên GitHub Releases/Tags."
+    doLast {
+        val grgit = Grgit.open(mapOf("currentDir" to project.rootDir))
+        println("VietCore Sync: Đang đẩy phiên bản ${android.defaultConfig.versionName} lên GitHub...")
+        
+        // Logic tự động tag phiên bản
+        grgit.tag.add(mapOf("name" to "v${android.defaultConfig.versionName}"))
+        grgit.push()
+        println("VietCore Sync: Hoàn tất đẩy tag lên GitHub.")
+    }
 }
