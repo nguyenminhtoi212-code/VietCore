@@ -2,6 +2,7 @@ package com.example.myempty.vietcore
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.app.ActivityManager
 import android.content.pm.PackageManager
 import android.content.pm.Signature
 import android.net.ConnectivityManager
@@ -166,6 +167,26 @@ class DeviceSimulator(private val context: Context) {
         }
     }
 
+    /**
+     * Resolves graphics and GPU configuration metrics
+     */
+    private fun getGraphicsMetrics(): String {
+        return try {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val configInfo = activityManager.deviceConfigurationInfo
+            val openGlVersion = configInfo.glEsVersion
+
+            // Check system properties for hardware renderer fallbacks often set by SOC layers
+            val glRenderer = SystemPropertiesProxy.get(context, "ro.hardware.egl", "")
+                .ifEmpty { SystemPropertiesProxy.get(context, "ro.board.platform", getSafeString("value_unknown")) }
+
+            // Safe lookup format: "OpenGL ES $openGlVersion ($glRenderer)"
+            getSafeString("report_graphics_format", openGlVersion, glRenderer.uppercase())
+        } catch (e: Exception) {
+            getSafeString("value_unknown")
+        }
+    }
+
     @SuppressLint("HardwareIds", "MissingPermission")
     suspend fun getRealTimeSpecs(): String {
         val publicIP = getPublicIP()
@@ -214,6 +235,7 @@ class DeviceSimulator(private val context: Context) {
         sb.append(getSafeString("report_serial_no", getSerialNumber())).append("\n")
         sb.append(getSafeString("report_imei_aid", imeiStatus)).append("\n")
         sb.append(getSafeString("report_cpu", Build.HARDWARE.uppercase(), Build.SUPPORTED_ABIS.firstOrNull() ?: "")).append("\n")
+        sb.append(getSafeString("report_graphics", getGraphicsMetrics())).append("\n")
         sb.append(getSafeString("report_thermal", getTemperature())).append("\n\n")
         
         sb.append(getSafeString("section_metrics")).append("\n")
@@ -258,5 +280,21 @@ class DeviceSimulator(private val context: Context) {
     private val batteryLevel: Int get() {
         val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
         return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+    }
+
+    /**
+     * Internal proxy reflection helper to safely look up hidden build/SOC specifications.
+     */
+    private object SystemPropertiesProxy {
+        fun get(context: Context, key: String, def: String): String {
+            return try {
+                val cl = context.classLoader
+                val systemProperties = cl.loadClass("android.os.SystemProperties")
+                val get = systemProperties.getMethod("get", String::class.java, String::class.java)
+                get.invoke(systemProperties, key, def) as String
+            } catch (e: Exception) {
+                def
+            }
+        }
     }
 }
