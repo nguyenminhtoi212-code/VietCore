@@ -4,33 +4,33 @@
     <string name="main_title">VietCore</string>
     <string name="settings_title">CÀI ĐẶT HỆ THỐNG</string>
     <string name="dev_name_label">Nhà phát triển: Nguyen Minh Toi</string>
-    <string name="version_label">Phiên bản: 26.1.16 Beta</string>
+    <string name="version_label">Phiên bản: 26.1.17 Beta</string>
 
     <string name="terminal_sys_tag">[VIETCORE_OS] </string>
-    <string name="terminal_init_msg">[HỆ THỐNG] Đang khởi tạo các mô-đun lõi...</string>
+    <string name="terminal_init_msg">[HỆ THỐNG] Đang khởi tạo các mô-đun cốt lõi...</string>
     <string name="terminal_prompt">toi@vietcore:~$ </string>
     <string name="terminal_hint">nhập lệnh...</string>
     <string name="terminal_exit_title">PHIÊN LÀM VIỆC TERMINAL</string>
     <string name="terminal_exit_msg">Bạn có muốn chấm dứt phiên làm việc và quay lại giao diện chính không?</string>
     <string name="terminal_btn_exit">THOÁT</string>
-    <string name="terminal_btn_cancel">HỦY BỎ</string>
+    <string name="terminal_btn_cancel">HỦY</string>
     <string name="log_keyboard_requested">Giao diện: Đã yêu cầu tiêu điểm bàn phím ảo.</string>
-    <string name="log_session_reset">[HỆ THỐNG] Phiên bảng điều khiển đã được đặt lại.</string>
-    <string name="log_awaiting">Đang chờ lệnh...</string>
-    <string name="log_exec_proc">EXECUTE: Đang xử lý chương trình \'%1$s\'...</string>
-    <string name="terminal_status_output">VietCore OS: ỔN ĐỊNH | Kernel: v1.0.2-2026</string>
+    <string name="log_session_reset">[HỆ THỐNG] Phiên làm việc của bảng điều khiển đã được đặt lại.</string>
+    <string name="log_awaiting">Đang chờ chỉ thị...</string>
+    <string name="log_exec_proc">THỰC THI: Đang xử lý chương trình \'%1$s\'...</string>
+    <string name="terminal_status_output">VietCore OS: ỔN ĐỊNH | Hạt nhân: v1.0.2-2026</string>
 
-    <string name="header_identity">TRUY CẬP ĐỊNH DANH LÕI</string>
+    <string name="header_identity">TRUY CẬP DANH TÍNH CỐT LÕI</string>
     <string name="header_security">GIAO THỨC BẢO MẬT</string>
     <string name="header_appearance">MÔ-ĐUN GIAO DIỆN</string>
     <string name="header_system_intel">DỮ LIỆU TÌNH BÁO</string>
     <string name="header_localization">ĐỊA PHƯƠNG HÓA HỆ THỐNG</string>
 
-    <string name="status_authorized">Trạng thái: Đã cấp quyền</string>
-    <string name="status_unauthorized">Trạng thái: Chưa cấp quyền</string>
-    <string name="user_rank">Cấp bậc: Quản trị viên Tối cao</string>
-    <string name="system_integrity">Toàn vẹn Hệ thống: 100%</string>
-    <string name="kernel_status">Kernel: Đang hoạt động</string>
+    <string name="status_authorized">Trạng thái: Đã ủy quyền</string>
+    <string name="status_unauthorized">Trạng thái: Chưa ủy quyền</string>
+    <string name="user_rank">Cấp bậc: Quản trị viên tối cao</string>
+    <string name="system_integrity">Toàn vẹn hệ thống: 100%</string>
+    <string name="kernel_status">Hạt nhân: Đang hoạt động</string>
     <string name="status_enabled">ĐÃ BẬT</string>
     <string name="status_disabled">ĐÃ TẮT</string>
     <string name="status_locked">MỤC TIÊU ĐÃ KHÓA</string>
@@ -39,34 +39,34 @@
     <string name="entity_ghost">THỰC THỂ SIÊU NHIÊN</string>
     <string name="infrared_active">CẢM BIẾN HỒNG NGOẠI: HOẠT ĐỘNG</string>
 
-    <string name="item_permissions">Quyền Hệ thống</string>
-    <string name="item_language">Ngôn ngữ Giao diện</string>
-    <string name="item_light_mode">Chế độ Sáng</string>
-    <string name="item_dark_mode">Chế độ Tối</string>
-    <string name="item_integrity_scan">Quét độ Toàn vẹn</string>
-    <string name="item_purge_cache">Xóa Bộ nhớ đệm Hệ thống</string>
-    <string name="item_experimental">Phòng Thí nghiệm Thực nghiệm</string>
-    <string name="item_terms">Điều khoản &amp; Điều kiện Chung</string>
+    <string name="item_permissions">Quyền hệ thống</string>
+    <string name="item_language">Ngôn ngữ giao diện</string>
+    <string name="item_light_mode">Chế độ sáng</string>
+    <string name="item_dark_mode">Chế độ tối</string>
+    <string name="item_integrity_scan">Quét tính toàn vẹn</string>
+    <string name="item_purge_cache">Xóa bộ nhớ đệm hệ thống</string>
+    <string name="item_experimental">Phòng thí nghiệm thử nghiệm</string>
+    <string name="item_terms">Điều khoản &amp; Điều kiện chung</string>
     
-    <string name="item_quantum_radar">Rada Lượng tử Hợp nhất</string>
-    <string name="radar_title">RADA LƯỢNG TỬ HỢP NHẤT v2.5</string>
+    <string name="item_quantum_radar">Rada dung hợp lượng tử</string>
+    <string name="radar_title">RADA DUNG HỢP LƯỢNG TỬ v2.5</string>
     <string name="radar_desc_active">Đang phân tích các thực thể đa chiều...</string>
-    <string name="toast_radar_enabled">Giao thức Rada Lượng tử đã được kích hoạt.</string>
+    <string name="toast_radar_enabled">Giao thức Rada lượng tử đã được kích hoạt.</string>
     <string name="btn_add_radar">QUÉT PHẦN CỨNG</string>
-    <string name="zoom_control">PHÓNG TO: x1.0</string>
+    <string name="zoom_control">THU PHÓNG: x1.0</string>
     <string name="scale_text">PHẠM VI: 500m</string>
-    <string name="status_footer">Liên kết Bảo mật VietCore | Phần cứng Đã xác minh</string>
+    <string name="status_footer">Liên kết bảo mật VietCore | Phần cứng đã xác minh</string>
     <string name="status_disconnected">TRẠNG THÁI: KHÔNG TÌM THẤY RADA NGOÀI</string>
     <string name="status_searching">TRẠNG THÁI: ĐANG TÌM KIẾM QUA BLE...</string>
     <string name="status_connected">TRẠNG THÁI: ĐÃ KẾT NỐI VỚI %s</string>
     <string name="device_unknown">THIẾT BỊ RADA KHÔNG XÁC ĐỊNH</string>
-    <string name="access_denied">&gt; Truy cập bị Từ chối: Rada Lượng tử đã bị tắt</string>
-    <string name="toast_deactivating">&gt; Đang hủy kích hoạt lõi Rada Lượng tử...</string>
-    <string name="info_toast">Rada Tình báo VietCore v3.1</string>
-    <string name="radar_detected_entities">&gt; PHÁT HIỆN: %1$d NGƯỜI | %2$d THIẾT BỊ CÔNG NGHỆ</string>
-    <string name="radar_status_active">&gt; OMNIS HOẠT ĐỘNG | GẦN: %1$dm | XA: %2$dm</string>
+    <string name="access_denied">&gt; Truy cập bị từ chối: Rada lượng tử đã bị tắt</string>
+    <string name="toast_deactivating">&gt; Đang hủy kích hoạt lõi Rada lượng tử...</string>
+    <string name="info_toast">Rada tình báo VietCore v3.1</string>
+    <string name="radar_detected_entities">&gt; PHÁT HIỆN: %1$d CON NGƯỜI | %2$d ĐƠN VỊ CÔNG NGHỆ</string>
+    <string name="radar_status_active">&gt; OMNIS ĐANG HOẠT ĐỘNG | GẦN: %1$dm | XA: %2$dm</string>
     <string name="radar_status_ir_locked"> | CẢM BIẾN IR: ĐÃ KHÓA</string>
-    <string name="radar_scanning_empty">&gt; OMNIS HOẠT ĐỘNG | ĐANG QUÉT KHÔNG PHÁT HIỆN MỤC TIÊU</string>
+    <string name="radar_scanning_empty">&gt; OMNIS ĐANG HOẠT ĐỘNG | ĐANG QUÉT KHÔNG PHÁT HIỆN MỤC TIÊU</string>
 
     <string name="radar_weather_storm">TRẠNG THÁI KHÍ QUYỂN: PHÁT HIỆN BÃO LƯỢNG TỬ</string>
     <string name="radar_weather_rain">TRẠNG THÁI KHÍ QUYỂN: ẢNH HƯỞNG LƯỢNG MƯA LỚN</string>
@@ -79,74 +79,74 @@
     <string name="menu_title">DANH MỤC LỆNH HỆ THỐNG</string>
     <string name="menu_deactivate">HỦY KÍCH HOẠT HỆ THỐNG RADA</string>
     <string name="menu_info">THÔNG TIN LÕI PHIÊN BẢN</string>
-    <string name="menu_cancel">HỦY HOẠT ĐỘNG</string>
+    <string name="menu_cancel">HỦY BỎ HOẠT ĐỘNG</string>
 
-    <string name="intel_logs_default">&gt; Mã nguồn Java Đã mã hóa\n&gt; Đã bật Phân tích Phần cứng\n&gt; Không có nhật ký nào được ghi lại</string>
-    <string name="log_scanning_integrity">&gt; Đang quét độ toàn vẹn hệ thống...</string>
+    <string name="intel_logs_default">&gt; Mã nguồn Java đã mã hóa\n&gt; Đã bật phân tích phần cứng\n&gt; Chưa có nhật ký nào được ghi lại</string>
+    <string name="log_scanning_integrity">&gt; Đang quét tính toàn vẹn hệ thống...</string>
     <string name="log_root_detected">&gt; CẢNH BÁO: Phát hiện quyền truy cập Root!</string>
     <string name="log_security_active">&gt; Lõi bảo mật đang hoạt động.</string>
     <string name="log_hardware_scan">&gt; Đang quét dấu vân tay phần cứng...</string>
     <string name="log_hardware_invalid">&gt; CẢNH BÁO: Phát hiện thiết bị không hợp lệ!</string>
     <string name="status_omnis_offline">OMNIS: CHẾ ĐỘ NGOẠI TUYẾN ĐANG HOẠT ĐỘNG</string>
 
-    <string name="toast_applying">Đang áp dụng các thay đổi cho Kernel...</string>
+    <string name="toast_applying">Đang áp dụng các thay đổi Hạt nhân...</string>
     <string name="toast_purge_success">Đã xóa bộ nhớ đệm hệ thống thành công.</string>
-    <string name="toast_scan_complete">Đã hoàn thành quét độ toàn vẹn.</string>
+    <string name="toast_scan_complete">Đã hoàn thành quét tính toàn vẹn.</string>
     <string name="toast_error_permission">Lỗi: Quyền hệ thống bị từ chối.</string>
-    <string name="toast_stress_test_init">NGUY HIỂM: Đang khởi tạo Kiểm tra Áp lực Hệ thống...</string>
+    <string name="toast_stress_test_init">NGUY HIỂM: Đang khởi tạo kiểm tra áp lực hệ thống...</string>
 
     <string name="btn_apply">ÁP DỤNG THAY ĐỔI</string>
     <string name="btn_recovery">KHÔI PHỤC HỆ THỐNG</string>
     <string name="btn_scan_now">QUÉT NGAY</string>
-    <string name="btn_authorize">CẤP QUYỀN</string>
-    <string name="btn_exit">THOÁT CONSOLE</string>
+    <string name="btn_authorize">ỦY QUYỀN</string>
+    <string name="btn_exit">THOÁT BẢNG ĐIỀU KHIỂN</string>
 
-    <string name="dialog_select_language">Chọn Ngôn ngữ Hệ thống</string>
+    <string name="dialog_select_language">Chọn ngôn ngữ hệ thống</string>
     <string name="dialog_confirm_recovery">Xác nhận khôi phục hệ thống? Hành động này không thể hoàn tác.</string>
     <string name="confirm_yes">XÁC NHẬN</string>
-    <string name="confirm_no">HỦY BỎ</string>
+    <string name="confirm_no">HỦY</string>
     <string name="menu_settings">Cài đặt</string>
     <string name="menu_exit">Thoát Core</string>
     <string name="dialog_exit_title">CHẤM DỨT PHIÊN LÀM VIỆC</string>
-    <string name="dialog_exit_msg">Bạn có chắc chắn muốn thoát khỏi VietCore Console không?</string>
+    <string name="dialog_exit_msg">Bạn có chắc chắn muốn thoát khỏi Bảng điều khiển VietCore không?</string>
 
-    <string name="legal_title">PHÁP LÝ VÀ ĐIỀU KHOẢN SỬ DỤNG</string>
-    <string name="legal_subtitle">Xem xét cấp quyền và tuân thủ hệ thống</string>
-    <string name="legal_content">&gt; Đang khởi tạo giao thức pháp lý VietCore...\n&gt; ID: VC-AUTH-2026\n&gt; Nhà phát triển: Nguyen Minh Toi\n\n[ĐIỀU KHOẢN SỬ DỤNG]\n1. VietCore Intelligence yêu cầu quyền truy cập phần cứng vì mục đích bảo mật.\n2. Bất kỳ hành vi can thiệp trái phép nào vào Kernel sẽ khóa ID thiết bị.\n3. Dữ liệu được bảo vệ bằng các lớp bảo mật RSA-4096.\n\n&gt; Đang chờ người dùng xác nhận...</string>
+    <string name="legal_title">QUY ĐỊNH PHÁP LÝ VÀ ĐIỀU KHOẢN SỬ DỤNG</string>
+    <string name="legal_subtitle">Xem xét ủy quyền và tuân thủ hệ thống</string>
+    <string name="legal_content">&gt; Đang khởi tạo giao thức pháp lý VietCore...\n&gt; ID: VC-AUTH-2026\n&gt; Nhà phát triển: Nguyen Minh Toi\n\n[ĐIỀU KHOẢN SỬ DỤNG]\n1. VietCore Intelligence yêu cầu truy cập phần cứng vì mục đích bảo mật.\n2. Mọi hành vi can thiệp trái phép vào Hạt nhân sẽ khóa ID thiết bị.\n3. Dữ liệu được bảo vệ bằng các lớp bảo mật RSA-4096.\n\n&gt; Đang chờ người dùng xác nhận...</string>
     <string name="cb_legal_agree">Tôi đồng ý với các điều khoản và giao thức bảo mật</string>
     <string name="btn_decline">TỪ CHỐI</string>
     <string name="btn_accept">CHẤP NHẬN</string>
 
     <string name="dev_lab_title">PHÒNG THÍ NGHIỆM PHÁT TRIỂN VIETCORE</string>
-    <string name="dev_lab_build">Bản thử nghiệm nội bộ: v26.Q2</string>
-    <string name="header_kernel_tweaks">[ TINH CHỈNH KERNEL ]</string>
+    <string name="dev_lab_build">Bản dựng thử nghiệm nội bộ: v26.Q2</string>
+    <string name="header_kernel_tweaks">[ TÙY CHỈNH HẠT NHÂN ]</string>
     <string name="header_ai_intel">[ TRÍ TUỆ NHÂN TẠO ]</string>
-    <string name="switch_bypass_sig">Bỏ qua Xác minh Chữ ký Ứng dụng</string>
-    <string name="switch_memory_scan">Quét Sâu Bộ nhớ Hex</string>
-    <string name="switch_ai_predict">Dự đoán Độ toàn vẹn bằng Thần kinh Nhân tạo</string>
+    <string name="switch_bypass_sig">Bỏ qua xác thực chữ ký ứng dụng</string>
+    <string name="switch_memory_scan">Quét sâu bộ nhớ Hex</string>
+    <string name="switch_ai_predict">Dự đoán tính toàn vẹn bằng mạng thần kinh</string>
     <string name="btn_stress_test">THỰC THI KIỂM TRA ÁP LỰC HỆ THỐNG</string>
-    <string name="btn_back_home">Quay lại Console Chính</string>
+    <string name="btn_back_home">Quay lại Bảng điều khiển chính</string>
     <string name="btn_close_dev_mode">[ QUAY LẠI GIAO DIỆN CHÍNH ]</string>
-    <string name="footer_dev_warning">LƯU Ý: Kích hoạt các tính năng thử nghiệm có thể làm mất ổn định VietCore Kernel. Chỉ dành cho các nhà phát triển được ủy quyền.</string>
+    <string name="footer_dev_warning">LƯU Ý: Kích hoạt các tính năng thử nghiệm có thể làm mất ổn định Hạt nhân VietCore. Chỉ dành cho các nhà phát triển được ủy quyền.</string>
 
     <string name="error_icon_text">[ ! ]</string>
     <string name="error_code_internal">MÃ LỖI BẢO MẬT: %1$d</string>
     <string name="log_integrity_breach_report">BÁO CÁO VI PHẠM: %1$s</string>
     <string name="error_lockdown_timer">PHONG TỎA PHẦN CỨNG / TỰ HỦY TRONG: %1$.1fs</string>
 
-    <string name="violation_unknown">Can thiệp Kernel Không xác định</string>
-    <string name="violation_hardware_restriction">Hạn chế Nền tảng Không phải Di động (Chặn TV/PC Box)</string>
-    <string name="violation_developer_options">Tùy chọn Nhà phát triển / Gỡ lỗi ADB Đang hoạt động</string>
-    <string name="violation_identity_breach">Tên Gói hoặc Chữ ký Manifest Bị Can thiệp</string>
-    <string name="violation_logic_tampered">Logic Cốt lõi Bị Thỏa hiệp (classes.dex bị sửa đổi)</string>
-    <string name="violation_resource_breach">Tài nguyên APK Bị Hỏng hoặc Bị Ký lại</string>
-    <string name="violation_remote_exploit">Khai thác Quyền truy cập / Điều khiển Từ xa Trái phép</string>
-    <string name="violation_network_compromised">Vi phạm Bảo mật Mạng: Phát hiện Chặn vVPN, Proxy hoặc MITM</string>
-    <string name="violation_audio_surveillance">Đa hợp Micrô / Phát hiện Giám sát Âm thanh</string>
-    <string name="violation_hacker_tools">Môi trường Hacker Hooking (Phát hiện Frida/Xposed/Cloner)</string>
-    <string name="violation_wireless_debugging">Giao thức Gỡ lỗi ADB Không dây Được bật</string>
-    <string name="violation_unsecure_env">Môi trường Không an toàn (Phát hiện Root/Trình giả lập Máy ảo)</string>
-    <string name="violation_hardware_breach">Phong tỏa Phần cứng Thất bại (Mở khóa Bootloader / ROM Tùy chỉnh)</string>
+    <string name="violation_unknown">Can thiệp hạt nhân không xác định</string>
+    <string name="violation_hardware_restriction">Hạn chế nền tảng không phải di động (Đã chặn TV/PC Box)</string>
+    <string name="violation_developer_options">Tùy chọn nhà phát triển / Gỡ lỗi ADB đang hoạt động</string>
+    <string name="violation_identity_breach">Tên gói hoặc chữ ký Manifest đã bị can thiệp</string>
+    <string name="violation_logic_tampered">Logic cốt lõi bị xâm phạm (classes.dex đã bị sửa đổi)</string>
+    <string name="violation_resource_breach">Tài nguyên APK bị hỏng hoặc bị ký lại</string>
+    <string name="violation_remote_exploit">Khai thác quyền truy cập / Điều khiển từ xa trái phép</string>
+    <string name="violation_network_compromised">Vi phạm bảo mật mạng: Phát hiện VPN, Proxy hoặc chặn MITM</string>
+    <string name="violation_audio_surveillance">Ghép kênh micrô / Phát hiện giám sát âm thanh</string>
+    <string name="violation_hacker_tools">Môi trường Hacker can thiệp (Phát hiện Frida/Xposed/Cloner)</string>
+    <string name="violation_wireless_debugging">Giao thức gỡ lỗi ADB không dây được bật</string>
+    <string name="violation_unsecure_env">Môi trường không an toàn (Phát hiện Root/Trình giả lập máy ảo)</string>
+    <string name="violation_hardware_breach">Lỗi phong tỏa phần cứng (Mở khóa Bootloader / Custom ROM)</string>
 
     <string name="report_header">[BÁO CÁO TÌNH BÁO VIETCORE]</string>
     <string name="report_time">Thời gian: %1$s</string>
@@ -157,19 +157,19 @@
     
     <string name="section_system_software">[HỆ THỐNG &amp; PHẦN MỀM]</string>
     <string name="report_os_version">Phiên bản OS: Android %1$s (API %2$d)</string>
-    <string name="report_build_id">Build ID: %1$s</string>
+    <string name="report_build_id">ID bản dựng: %1$s</string>
     <string name="report_build_number">Số bản dựng: %1$s</string>
-    <string name="report_kernel">Kernel: %1$s</string>
+    <string name="report_kernel">Hạt nhân: %1$s</string>
     <string name="report_selinux">SELinux: %1$s</string>
     <string name="report_google_play">Hệ thống Google Play: %1$s</string>
-    <string name="report_security_patch">Bản vá Bảo mật: %1$s</string>
+    <string name="report_security_patch">Bản vá bảo mật: %1$s</string>
     
     <string name="section_telecom_modem">[VIỄN THÔNG &amp; MODEM]</string>
     <string name="report_baseband">Băng tần cơ sở: %1$s</string>
-    <string name="report_carrier_software">Phần mềm Nhà mạng: %1$s</string>
-    <string name="report_public_ip">IP Công cộng: %1$s</string>
+    <string name="report_carrier_software">Phần mềm nhà mạng: %1$s</string>
+    <string name="report_public_ip">IP công cộng: %1$s</string>
     <string name="sim_status_none">Trạng thái SIM: Không phát hiện SIM</string>
-    <string name="sim_status_denied">SIM: Truy cập bị Từ chối</string>
+    <string name="sim_status_denied">SIM: Truy cập bị từ chối</string>
     <string name="sim_slot_format">Khe %1$d: %2$s (%3$s) - %4$s</string>
     <string name="sim_type_esim">eSIM</string>
     <string name="sim_type_physical">SIM vật lý</string>
@@ -180,7 +180,7 @@
     <string name="network_mobile_format">Di động: %1$s | Tốc độ: %2$s | Khu vực: %3$s</string>
     <string name="network_gateway_default">Cổng kết nối</string>
     
-    <string name="section_identity_hardware">[ĐỊNH DANH &amp; PHẦN CỨNG]</string>
+    <string name="section_identity_hardware">[DANH TÍNH &amp; PHẦN CỨNG]</string>
     <string name="report_android_id">Android ID: %1$s</string>
     <string name="report_serial_no">Số sê-ri: %1$s</string>
     <string name="report_imei_aid">IMEI/AID: %1$s</string>
@@ -191,11 +191,15 @@
     
     <string name="section_metrics">[THÔNG SỐ ĐO LƯỜNG]</string>
     <string name="report_display">Màn hình: %1$s</string>
-    <string name="report_storage">Lưu trữ: %1$s</string>
-    <string name="report_battery_uptime">Pin: %1$d%% | Thời gian hoạt động: %2$ds</string>
+    <string name="report_storage">Bộ nhớ: %1$s</string>
+    <string name="report_battery_uptime">Pin: %1$s | Thời gian hoạt động: %2$ds</string>
     
+    <string name="battery_status_charging">Đang sạc</string>
+    <string name="battery_status_full">Đã sạc đầy</string>
+    <string name="battery_status_discharging">Đang xả pin</string>
+
     <string name="value_unknown">Không xác định</string>
-    <string name="value_enforcing">Đang thực thi</string>
+    <string name="value_enforcing">Bắt buộc (Enforcing)</string>
     <string name="value_protected">ĐƯỢC BẢO VỆ</string>
     <string name="value_redacted">ĐÃ BIÊN TẬP LẠI</string>
     <string name="value_secure_hash">SECURE_HASH</string>
