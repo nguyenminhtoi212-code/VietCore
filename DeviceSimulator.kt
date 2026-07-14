@@ -3,6 +3,8 @@ package com.example.myempty.vietcore
 import android.annotation.SuppressLint
 import android.content.Context
 import android.app.ActivityManager
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.Signature
 import android.net.ConnectivityManager
@@ -241,14 +243,17 @@ class DeviceSimulator(private val context: Context) {
         sb.append(getSafeString("section_metrics")).append("\n")
         sb.append(getSafeString("report_display", getResolution())).append("\n")
         sb.append(getSafeString("report_storage", getStorageStatus())).append("\n")
-        sb.append(getSafeString("report_battery_uptime", batteryLevel, SystemClock.elapsedRealtime() / 1000)).append("\n")
+        
+        // Formatted combined string showing capacity along with power status ("Charging" / "Fully Charged")
+        val batteryDisplayInfo = "$batteryLevel% (${getBatteryState()})"
+        sb.append(getSafeString("report_battery_uptime", batteryDisplayInfo, SystemClock.elapsedRealtime() / 1000)).append("\n")
         sb.append(getSafeString("report_divider"))
 
         return sb.toString()
     }
 
     private fun getTemperature(): String {
-        val intent = context.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
+        val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val temp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
         return "${temp / 10.0}°C"
     }
@@ -280,6 +285,29 @@ class DeviceSimulator(private val context: Context) {
     private val batteryLevel: Int get() {
         val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
         return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+    }
+
+    /**
+     * Resolves the current charging or charged state.
+     */
+    private fun getBatteryState(): String {
+        return try {
+            val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+            when (status) {
+                BatteryManager.BATTERY_STATUS_CHARGING -> {
+                    getSafeString("battery_status_charging").ifEmpty { "Charging" }
+                }
+                BatteryManager.BATTERY_STATUS_FULL -> {
+                    getSafeString("battery_status_full").ifEmpty { "Fully Charged" }
+                }
+                else -> {
+                    getSafeString("battery_status_discharging").ifEmpty { "Discharging" }
+                }
+            }
+        } catch (e: Exception) {
+            getSafeString("value_unknown").ifEmpty { "Unknown" }
+        }
     }
 
     /**
