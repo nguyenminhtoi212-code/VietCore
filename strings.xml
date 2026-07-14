@@ -4,7 +4,7 @@
     <string name="main_title">VietCore</string>
     <string name="settings_title">SYSTEM SETTINGS</string>
     <string name="dev_name_label">Developer: Nguyen Minh Toi</string>
-    <string name="version_label">Version: 26.1.16 Beta</string>
+    <string name="version_label">Version: 26.1.17 Beta</string>
 
     <string name="terminal_sys_tag">[VIETCORE_OS] </string>
     <string name="terminal_init_msg">[SYSTEM] Initializing core modules...</string>
@@ -192,8 +192,12 @@
     <string name="section_metrics">[METRICS]</string>
     <string name="report_display">Display: %1$s</string>
     <string name="report_storage">Storage: %1$s</string>
-    <string name="report_battery_uptime">Battery: %1$d%% | Uptime: %2$ds</string>
+    <string name="report_battery_uptime">Battery: %1$s | Uptime: %2$ds</string>
     
+    <string name="battery_status_charging">Charging</string>
+    <string name="battery_status_full">Fully Charged</string>
+    <string name="battery_status_discharging">Discharging</string>
+
     <string name="value_unknown">Unknown</string>
     <string name="value_enforcing">Enforcing</string>
     <string name="value_protected">PROTECTED</string>
@@ -203,3 +207,4 @@
     <string name="value_global">Global</string>
     <string name="value_not_available">N/A</string>
 </resources>
+        
